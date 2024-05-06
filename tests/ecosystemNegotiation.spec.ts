@@ -214,7 +214,17 @@ describe("Ecosystem routes tests", () => {
       .set("Authorization", `Bearer ${orchestJwt}`)
       .send(sampleEcosystem)
       .expect(201);
+      expect(response.body.orchestrator).to.equal(orchestId);
     ecosystemId = response.body._id;
+  });
+
+  it("should get Ecosystem by ID", async () => {
+    const response = await request(app)
+      .get(`/v1/ecosystems/${ecosystemId}`)
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an("array").and.to.not.be.empty;
+    expect(response.body._id).to.equal(ecosystemId);
+
   });
 
   it("should getMyEcosystems", async () => {
@@ -233,13 +243,6 @@ describe("Ecosystem routes tests", () => {
       .expect(200);
   });
 
-  it("should getMyEcosystems", async () => {
-    const response = await request(app)
-      .get("/v1/ecosystems/me")
-      .set("Authorization", `Bearer ${orchestJwt}`);
-    expect(response.status).to.equal(200);
-    expect(response.body).to.be.an("array").and.to.not.be.empty;
-  });
   it("should create ecosystem contract", async () => {
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/contract`)
@@ -251,6 +254,9 @@ describe("Ecosystem routes tests", () => {
       .get(`/v1/ecosystems/${ecosystemId}/contract`)
       .set("Authorization", `Bearer ${orchestJwt}`);
     expect(response.status).to.equal(200);
+    expect(response.body.ecosystem).to.equal(ecosystemId);
+    expect(response.body.orchestrator).to.equal(orchestId);
+    expect(response.body.status).to.equal("pending");
   });
 
   it("should apply Orchestrator Signature", async () => {
@@ -261,6 +267,7 @@ describe("Ecosystem routes tests", () => {
         signature: "hasSigned",
       })
       .expect(200);
+      expect(response.body.message).to.equal("successfully signed contract");  
   });
 
   it("should create invitation to join ecosystem for a data provider", async () => {
@@ -270,7 +277,7 @@ describe("Ecosystem routes tests", () => {
       .send({ ...sampleInvitation, participantId: provider1Id })
       .expect(200);
 
-    // expect(response.body.participant).to.equal(provider1Id);
+    // expect(response.body.invitation[0].participant).to.equal(provider1Id);
     // expect(response.body.status).to.equal("Requested");
     // expect(response.body.latestNegotiator).to.equal(orchestId);
   });
@@ -281,7 +288,7 @@ describe("Ecosystem routes tests", () => {
       .send({ ...sampleInvitation, participantId: consumer1Id })
       .expect(200);
 
-    // expect(response.body.participant).to.equal(consumer1Id);
+    // expect(response.body.invitation[0].participant).to.equal(consumer1Id);
     // expect(response.body.status).to.equal("Requested");
     // expect(response.body.latestNegotiator).to.equal(orchestId);
   });
@@ -332,6 +339,15 @@ describe("Ecosystem routes tests", () => {
         signature: "hasSigned",
       })
       .expect(200);
+      expect(response.body.message).to.equal("successfully signed contract");  
+
+  });
+
+  it("should get Ecosystems for a single participant", async () => {
+    const response = await request(app)
+      .get(`/v1/ecosystems/participant/${provider1Id}`)
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an("array").and.to.not.be.empty;
   });
 
   it("should create join request by a data provider", async () => {
@@ -380,9 +396,29 @@ describe("Ecosystem routes tests", () => {
   });
   it("should reject join request", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${ecosystemId}/requests/${requestId1}/reject`)
+      .put(`/v1/ecosystems/${ecosystemId}/requests/${requestId2}/reject`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(200);
+  });
+
+  it("should get all Ecosystems", async () => {
+    const response = await request(app)
+      .get(`/v1/ecosystems`)
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an("array").and.to.not.be.empty;
+  });
+
+    it("should get Circulating Resources In Ecosystem", async () => {
+    const response = await request(app)
+      .get(`/v1/ecosystems/${provider1Id}/circulating`)
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an("array").and.to.not.be.empty;
+  });
+  it("should get Ecosystems for a single participant", async () => {
+    const response = await request(app)
+      .get(`/v1/ecosystems/participant/${provider1Id}`)
+    expect(response.status).to.equal(200);
+    expect(response.body).to.be.an("array").and.to.not.be.empty;
   });
 
   it("should delete the ecosystem by Id", async () => {
@@ -392,4 +428,5 @@ describe("Ecosystem routes tests", () => {
 
     expect(response.status).to.equal(200);
   });
+
 });
