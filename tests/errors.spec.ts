@@ -57,9 +57,11 @@ let ecosystem2Id = "";
 let ecosystem3Id = "";
 const mock = new MockAdapter(axios);
 const nonExistingEcosystemId = "000000000000000000000000";
-const InvalidrequestId = "000000000000000000000000";
-const nonExistingdataResourcesId = "000000000000000000000000";
-const nonExistingsoftwareResourcesId = "000000000000000000000000";
+const nonExistingRequestId = "000000000000000000000000";
+const nonExistingDataResourcesId = "000000000000000000000000";
+const nonExistingSoftwareResourcesId = "000000000000000000000000";
+const nonExistingServiceOfferingId = "000000000000000000000000";
+
 
 
 let loadMongooseStub;
@@ -243,7 +245,7 @@ describe("Error Management for data resources Tests", () => {
 
   it("should not get a not existant data resource", async () => {
     const response = await request(app)
-      .get(`/v1/dataResources/${nonExistingdataResourcesId}`)
+      .get(`/v1/dataResources/${nonExistingDataResourcesId}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The data resource could not be found"); 
@@ -251,7 +253,7 @@ describe("Error Management for data resources Tests", () => {
 
   it("should not get DCAT for a not existant data resource", async () => {
     const response = await request(app)
-    .get(`/v1/dataResources/dcat/${nonExistingdataResourcesId}`)
+    .get(`/v1/dataResources/dcat/${nonExistingDataResourcesId}`)
     .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The data resource could not be found"); 
@@ -260,7 +262,7 @@ describe("Error Management for data resources Tests", () => {
   it("should not update a not existant data resource", async () => {
     const updatedDataResourceData = sampleUpdatedDataResource;
     const response = await request(app)
-      .put(`/v1/dataResources/${nonExistingdataResourcesId}`)
+      .put(`/v1/dataResources/${nonExistingDataResourcesId}`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send(updatedDataResourceData)
       .expect(404);
@@ -270,7 +272,7 @@ describe("Error Management for data resources Tests", () => {
 
   it("should not delete a not existant DataResource", async () => {
     const response = await request(app)
-      .delete(`/v1/dataResources/${nonExistingdataResourcesId}`)
+      .delete(`/v1/dataResources/${nonExistingDataResourcesId}`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
@@ -282,7 +284,7 @@ describe("Error Management for data resources Tests", () => {
 describe("Error Management for software resources Tests", () => {
   it("should not get a not existant software resource", async () => {
     const response = await request(app)
-      .get(`/v1/softwareresources/${nonExistingsoftwareResourcesId}`)
+      .get(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
@@ -291,7 +293,7 @@ describe("Error Management for software resources Tests", () => {
 
   it("should not get DCAT for a not existant software resource", async () => {
     const response = await request(app)
-    .get(`/v1/softwareresources/dcat/${nonExistingsoftwareResourcesId}`)
+    .get(`/v1/softwareresources/dcat/${nonExistingSoftwareResourcesId}`)
     .set("Authorization", `Bearer ${consumerJwt}`)
     .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
@@ -301,7 +303,7 @@ describe("Error Management for software resources Tests", () => {
   it("should not update a not existant software resource", async () => {
     const updatedSoftwareResourceData = sampleUpdatedSoftwareResource;
     const response = await request(app)
-      .put(`/v1/softwareresources/${nonExistingsoftwareResourcesId}`)
+      .put(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .send(updatedSoftwareResourceData)
       .expect(404);
@@ -311,7 +313,7 @@ describe("Error Management for software resources Tests", () => {
 
   it("should not delete a not existant software Resource", async () => {
     const response = await request(app)
-      .delete(`/v1/softwareresources/${nonExistingsoftwareResourcesId}`)
+      .delete(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
@@ -319,6 +321,45 @@ describe("Error Management for software resources Tests", () => {
   });
 });
 
+//Error Management for service offerings Tests
+describe("Error Management for service offerings Tests", () => {
+
+  it("Should not update not existing service offerings", async () => {
+    const response = await request(app)
+      .put(`/v1/serviceofferings/${nonExistingServiceOfferingId}`)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .send(sampleProviderServiceOffering)
+      .expect(404);
+      expect(response.body.errorMsg).to.equal("Resource not found");  
+      expect(response.body.message).to.equal("The service offering could not be found");
+  });
+
+  it("Should not get the service offering by non existing id", async () => {
+    const response = await request(app)
+      .get("/v1/serviceofferings/" + nonExistingServiceOfferingId)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .expect(404);
+      expect(response.body.errorMsg).to.equal("Resource not found");  
+      expect(response.body.message).to.equal("The service offering could not be found");
+  });
+
+  it("Should not get DCAT ServiceOffering by non existing id", async () => {
+    const response = await request(app)
+      .get(`/v1/serviceofferings/dcat/${nonExistingServiceOfferingId}`)
+      .expect(404);
+      expect(response.body.errorMsg).to.equal("Resource not found");  
+      expect(response.body.message).to.equal("The service offering could not be found");
+  });
+
+  it("Should not delete non existing service offering", async () => {
+    const response = await request(app)
+      .delete("/v1/serviceofferings/" + nonExistingServiceOfferingId)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .expect(404);
+      expect(response.body.errorMsg).to.equal("Resource not found");  
+      expect(response.body.message).to.equal("The service offering could not be found");
+  });
+});
 //Error Management for Ecosystem Routes Tests
 describe("Error Management for Ecosystem Routes Tests", () => {
   it("should not create a new ecosystem when contract generation fails", async () => {
@@ -584,7 +625,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not authorize not existing join request", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${ecosystemId}/requests/${InvalidrequestId}/authorize`)
+      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistingRequestId}/authorize`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(400);
   });
@@ -598,7 +639,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
   });
   it("should not reject not existing join request", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${ecosystemId}/requests/${InvalidrequestId}/reject`)
+      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistingRequestId}/reject`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(400);
   });
