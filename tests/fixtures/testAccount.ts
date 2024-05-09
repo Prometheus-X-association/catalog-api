@@ -75,3 +75,32 @@ export const testConsumer4 = {
   firstName: "test",
   lastName: "consumer4",
 }
+
+export const testErrorOrchest = {
+  email: "orchest2@example.com",
+  password: "Password@123!",
+  participantName: "orchest_Organization",
+  firstName: "test",
+  lastName: "orchest2",
+};
+export const testErrorProvider1 = {
+  email: "provider_1@example.com",
+  password: "Password@123!",
+  participantName: "provider_Organization1",
+  firstName: "test",
+  lastName: "provider1",
+};
+export const testErrorProvider2 = {
+  email: "provider_1@example.com",
+  password: "Password@123!",
+  participantName: "provider_Organization2",
+  firstName: "test",
+  lastName: "provider1",
+};
+export const testErrorConsumer = {
+  email: "consumer_1@example.com",
+  password: "Password@123!",
+  participantName: "consumer_Organization",
+  firstName: "test",
+  lastName: "consumer1",
+}

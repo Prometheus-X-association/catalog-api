@@ -13,6 +13,9 @@ import {
   sampleProviderServiceOffering,
   sampleConsumerServiceOffering,
   sampleBilateralNegotiation,
+  sampleAuthorizeNegotiation,
+  sampleNegotiatePolicies,
+  sampleSignNegotiation,
 } from "./fixtures/sampleData";
 import { stub } from "sinon";
 import * as loadMongoose from "../src/config/database";
@@ -138,17 +141,7 @@ describe("Bilateral Negotiation Routes Tests", () => {
     const response = await request(app)
       .put(`/v1/negotiation/${negotiationId}`)
       .set("Authorization", `Bearer ${providerJwt}`)
-      .send({
-        policy: [
-          {
-            ruleId: "rule-access-5",
-            values: {
-              dateBegin: "2024-01-01",
-              dateEnd: "2026-01-01",
-            },
-          },
-        ],
-      })
+      .send(sampleAuthorizeNegotiation)
       .expect(200);
     expect(response.body).to.be.an("object");
     expect(response.body).to.have.property("negotiationStatus", "Authorized");
@@ -180,19 +173,15 @@ describe("Bilateral Negotiation Routes Tests", () => {
   it("should sign exchange configuration by data provider", async () => {
     const response = await request(app)
       .put(`/v1/negotiation/${negotiationId}/sign`)
-      .set("Authorization", `Bearer ${consumerJwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .set("Authorization", `Bearer ${providerJwt}`)
+      .send(sampleSignNegotiation)
       .expect(200);
   });
   it("should sign exchange configuration by service provider", async () => {
     const response = await request(app)
       .put(`/v1/negotiation/${negotiationId}/sign`)
       .set("Authorization", `Bearer ${consumerJwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignNegotiation)
       .expect(200);
   });
 
@@ -216,21 +205,11 @@ describe("Bilateral Negotiation Routes Tests", () => {
       .set("Authorization", `Bearer ${consumerJwt}`)
       .expect(200);
   });
-  it("should negociate exchange configuration policies", async () => {
+  it("should negotiate exchange configuration policies", async () => {
     const response = await request(app)
       .put(`/v1/negotiation/${negotiationId}/negotiate`)
       .set("Authorization", `Bearer ${consumerJwt}`)
-      .send({
-        policy: [
-          {
-            ruleId: "rule-access-5",
-            values: {
-              dateBegin: "2022-02-02",
-              dateEnd: "2023-03-03",
-            },
-          },
-        ],
-      })
+      .send(sampleNegotiatePolicies)
       .expect(200);
     expect(response.body).to.be.an("object");
     expect(response.body).to.have.property("negotiationStatus", "Negotiation");

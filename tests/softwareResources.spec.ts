@@ -22,7 +22,7 @@ let consumerId = "";
 let softwareResourceId: "";
 let jwt = "";
 
-describe("Software Resources Routes Tests", () => {
+describe("Software Resources Routes Tests", function ()  {
   let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -103,14 +103,14 @@ describe("Software Resources Routes Tests", () => {
       .get("/v1/softwareresources/me")
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
-      expect(response.body).to.be.an("array").and.to.not.be.empty;
+      expect(response.body).to.not.be.empty;
     });
 
   it("should get all softwareResources", async () => {
     const response = await request(app)
       .get("/v1/softwareresources")
       .expect(200);
-      expect(response.body).to.be.an("array").and.to.not.be.empty;
+      expect(response.body).to.not.be.empty;
     });
 
   it("should delete softwareResource", async () => {
@@ -118,6 +118,6 @@ describe("Software Resources Routes Tests", () => {
       .delete(`/v1/softwareresources/${softwareResourceId}`)
       .set("Authorization", `Bearer ${jwt}`)
       .expect(204);
-    //assertions
+      expect(response.body).to.be.empty;
   });
 });

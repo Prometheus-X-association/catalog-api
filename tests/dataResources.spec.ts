@@ -20,7 +20,7 @@ let providerId = "";
 let dataResourcesId: "";
 let jwt = "";
 
-describe("Data Resources Routes Tests", () => {
+describe("Data Resources Routes Tests", function() {
   let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -69,7 +69,6 @@ describe("Data Resources Routes Tests", () => {
       .send(dataResourceData)
       .expect(201);
     dataResourcesId = response.body._id;
-
     expect(response.body).to.be.an("object");
     //assertions
   });
@@ -89,7 +88,6 @@ describe("Data Resources Routes Tests", () => {
     const response = await request(app)
       .get(`/v1/dataResources/${dataResourcesId}`)
       .expect(200);
-    //assertions
     //expect response id = dataresourceid
   });
 
@@ -98,7 +96,6 @@ describe("Data Resources Routes Tests", () => {
       .get(`/v1/dataResources/${dataResourcesId}`)
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
-    //assertions
     //expect response id = dataresourceid
   });
 
@@ -107,8 +104,8 @@ describe("Data Resources Routes Tests", () => {
       .get("/v1/dataResources/me")
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
+      expect(response.body).to.not.be.empty;
     //assertions
-    //expect response not empty
   });
 
   it("Should get DCAT Data Resources", async () => {
@@ -123,8 +120,7 @@ describe("Data Resources Routes Tests", () => {
 
   it("should get all dataResources", async () => {
     const response = await request(app).get("/v1/dataResources").expect(200);
-    //assertions
-    //expect response not empty
+    expect(response.body).to.not.be.empty;
   });
 
   it("should delete DataResource by id", async () => {
@@ -132,8 +128,5 @@ describe("Data Resources Routes Tests", () => {
       .delete(`/v1/dataResources/${dataResourcesId}`)
       .set("Authorization", `Bearer ${jwt}`)
       .expect(204);
-    //assertions
-    //expect
-    //error test get data resources deleted
   });
 });
