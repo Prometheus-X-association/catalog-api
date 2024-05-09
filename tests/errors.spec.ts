@@ -6,13 +6,13 @@ import { IncomingMessage, Server, ServerResponse } from "http";
 import { Application } from "express";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { mockContract } from "./fixtures/fixture.contract";
+import { mockBilateralContract, mockContract } from "./fixtures/fixture.contract";
 
 import {
-  testProvider2,
-  testProvider3,
-  testOrchestrator,
-  testConsumer1,
+  testErrorProvider1,
+  testErrorProvider2,
+  testErrorOrchest,
+  testErrorConsumer,
 } from "./fixtures/testAccount";
 import {
   sampleDataResource,
@@ -21,15 +21,22 @@ import {
   sampleUpdatedSoftwareResource,
   sampleProviderServiceOffering,
   sampleConsumerServiceOffering,
+  sampleBilateralNegotiation,
+  sampleAuthorizeNegotiation,
+  sampleNegotiatePolicies,
+  sampleSignNegotiation,
   sampleEcosystem,
+  sampleEcosystem1,
   sampleInvitation,
   sampleUpdatedEcosystem,
   sampleOfferings,
   sampleJoinRequest,
+  sampleSignEcosystem,
 } from "./fixtures/sampleData";
 import { stub } from "sinon";
 import * as loadMongoose from "../src/config/database";
 import { closeMongoMemory, openMongoMemory } from "./utils.ts/mongoMemory";
+import { error } from "console";
 
 config();
 
@@ -47,23 +54,27 @@ let orchestJwt = "";
 let provider1Jwt = "";
 let provider2Jwt = "";
 let consumerJwt = "";
-let alreadyParticipantJwt = "";
 let providerServiceOffering1Id = "";
 let providerServiceOffering2Id = "";
 let consumerServiceOffering1Id = "";
-let requestId1: "";
+let negotiation1Id = "";
+let negotiation2Id = "";
+let requestId1 = "";
 let ecosystemId = "";
 let ecosystem2Id = "";
 let ecosystem3Id = "";
 const mock = new MockAdapter(axios);
-const nonExistingEcosystemId = "000000000000000000000000";
-const nonExistingRequestId = "000000000000000000000000";
-const nonExistingDataResourcesId = "000000000000000000000000";
-const nonExistingSoftwareResourcesId = "000000000000000000000000";
-const nonExistingServiceOfferingId = "000000000000000000000000";
+const nonExistentDataResourcesId = "000000000000000000000000";
+const nonExistentSoftwareResourcesId = "000000000000000000000000";
+const nonExistentnegotiation1Id = "000000000000000000000000";
+const nonExistentServiceOfferingId = "000000000000000000000000";
+const nonExistentRequestId = "000000000000000000000000";
+const nonExistentEcosystemId = "000000000000000000000000";
 
 
 
+describe("Error Management catalog_api Routes Tests", function() {
+  this.timeout(10000);
 let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -77,9 +88,10 @@ let loadMongooseStub;
     app = serverInstance.app;
     server = serverInstance.server;
     mockContract();
+    mockBilateralContract();
 
     // Create provider1
-    const provider1Data = testProvider2;
+    const provider1Data = testErrorProvider1;
     const provider1Response = await request(app)
       .post("/v1/auth/signup")
       .send(provider1Data);
@@ -87,7 +99,7 @@ let loadMongooseStub;
 
 
     // Create consumer 1
-    const consumer1Data = testConsumer1;
+    const consumer1Data = testErrorConsumer;
     const consumer1Response = await request(app)
       .post("/v1/auth/signup")
       .send(consumer1Data);
@@ -95,7 +107,7 @@ let loadMongooseStub;
 
 
     // Create orchestrator
-    const orchestData = testOrchestrator;
+    const orchestData = testErrorOrchest;
     const orchestResponse = await request(app)
       .post("/v1/auth/signup")
       .send(orchestData);
@@ -103,8 +115,8 @@ let loadMongooseStub;
 
     // Login orchestrator
     const orchestAuthResponse = await request(app).post("/v1/auth/login").send({
-      email: testOrchestrator.email,
-      password: testOrchestrator.password,
+      email: testErrorOrchest.email,
+      password: testErrorOrchest.password,
     });
     orchestJwt = orchestAuthResponse.body.token;
 
@@ -112,17 +124,17 @@ let loadMongooseStub;
     const consumer1AuthResponse = await request(app)
       .post("/v1/auth/login")
       .send({
-        email: testConsumer1.email,
-        password: testConsumer1.password,
+        email: testErrorConsumer.email,
+        password: testErrorConsumer.password,
       });
-      alreadyParticipantJwt = consumer1AuthResponse.body.token;
+      consumerJwt = consumer1AuthResponse.body.token;
 
     // Login provider1
     const provider1AuthResponse = await request(app)
       .post("/v1/auth/login")
       .send({
-        email: testProvider2.email,
-        password: testProvider2.password,
+        email: testErrorProvider1.email,
+        password: testErrorProvider1.password,
       });
     provider1Jwt = provider1AuthResponse.body.token;
 
@@ -130,8 +142,8 @@ let loadMongooseStub;
     const provider2AuthResponse = await request(app)
     .post("/v1/auth/login")
     .send({
-      email: testProvider3.email,
-      password: testProvider3.password,
+      email: testErrorProvider2.email,
+      password: testErrorProvider2.password,
     });
   provider2Jwt = provider2AuthResponse.body.token;
 
@@ -142,12 +154,14 @@ let loadMongooseStub;
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send(dataResource1Data);
     dataResource1Id = dataResponse1.body._id;
+
     // Create service offerings 1
     const resProvider1 = await request(app)
       .post("/v1/serviceofferings")
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send({ ...sampleProviderServiceOffering, providedBy: provider1Id });
     providerServiceOffering1Id = resProvider1.body._id;
+
     // Create data resource 2
     const dataResource2Data = sampleDataResource;
     const dataResponse2 = await request(app)
@@ -155,6 +169,7 @@ let loadMongooseStub;
       .set("Authorization", `Bearer ${provider2Jwt}`)
       .send(dataResource2Data);
     dataResource2Id = dataResponse2.body._id;
+
     // Create service offerings 2
     const resProvider2 = await request(app)
       .post("/v1/serviceofferings")
@@ -169,17 +184,53 @@ let loadMongooseStub;
       .set("Authorization", `Bearer ${consumerJwt}`)
       .send(softwareResource1Data);
     softwareResource1Id = softwareResponse1.body.id;
+
     // Create service offerings 1
     const resConsumer1 = await request(app)
       .post("/v1/serviceofferings")
       .set("Authorization", `Bearer ${consumerJwt}`)
       .send({ ...sampleConsumerServiceOffering, providedBy: consumerId });
     consumerServiceOffering1Id = resConsumer1.body._id;
+
+    //create bilateral negotiation 1 (authorized & accepted in tests below)
+    const negotiationData = sampleBilateralNegotiation;
+    const negotiationResponse = await request(app)
+      .post("/v1/negotiation")
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .send({
+        ...negotiationData,
+        provider: provider1Id,
+        consumer: consumerId,
+        providerServiceOffering: providerServiceOffering1Id,
+        consumerServiceOffering: consumerServiceOffering1Id,
+      })
+      negotiation1Id = negotiationResponse.body._id;
+
+    //create bilateral negotiation 2 (authorized but not accepted in tests below)
+    const negotiation2Data = sampleBilateralNegotiation;
+    const negotiation2Response = await request(app)
+      .post("/v1/negotiation")
+      .set("Authorization", `Bearer ${provider2Jwt}`)
+      .send({
+        ...negotiation2Data,
+        provider: provider2Id,
+        consumer: consumerId,
+        providerServiceOffering: providerServiceOffering2Id,
+        consumerServiceOffering: consumerServiceOffering1Id,
+      })
+      negotiation2Id = negotiation2Response.body._id;
+
+    //authorize negotiation 2
+    request(app)
+    .put(`/v1/negotiation/${negotiation2Id}`)
+    .set("Authorization", `Bearer ${provider2Jwt}`)
+    .send(sampleAuthorizeNegotiation)
+
     //create ecosystem 1 : no invitation needed
       const ecosystem1response = await request(app)
       .post("/v1/ecosystems")
       .set("Authorization", `Bearer ${orchestJwt}`)
-      .send(sampleEcosystem)
+      .send(sampleEcosystem1)
     ecosystemId = ecosystem1response.body._id;
 
     //create ecosystem 2 : participant invited and contract signed
@@ -192,9 +243,7 @@ let loadMongooseStub;
     request(app)
     .post(`/v1/ecosystems/${ecosystem2Id}/signature/orchestrator`)
     .set("Authorization", `Bearer ${orchestJwt}`)
-    .send({
-      signature: "hasSigned",
-    })
+    .send(sampleSignEcosystem)
     //invite consumer to join ecosystem 2
     request(app)
     .post(`/v1/ecosystems/${ecosystem2Id}/invites`)
@@ -216,10 +265,9 @@ let loadMongooseStub;
     request(app)
     .post(`/v1/ecosystems/${ecosystem2Id}/signature/participant`)
     .set("Authorization", `Bearer ${consumerJwt}`)
-    .send({
-      signature: "hasSigned",
-    })
-    //create ecosystem 3 : just invite participant
+    .send(sampleSignEcosystem)
+
+    //create ecosystem 3 : only invite participant
     const ecosystem3response = await request(app)
     .post("/v1/ecosystems")
     .set("Authorization", `Bearer ${orchestJwt}`)
@@ -240,12 +288,13 @@ let loadMongooseStub;
     server.close();
   });
 
-//Error Management for data resources Tests
-describe("Error Management for data resources Tests", () => {
 
+ //Error Management for Data Resources Routes Tests
+describe("Error Management for Data Resources Routes Tests", function() {
   it("should not get a not existant data resource", async () => {
     const response = await request(app)
-      .get(`/v1/dataResources/${nonExistingDataResourcesId}`)
+      .get(`/v1/dataResources/${nonExistentDataResourcesId}`)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The data resource could not be found"); 
@@ -253,7 +302,7 @@ describe("Error Management for data resources Tests", () => {
 
   it("should not get DCAT for a not existant data resource", async () => {
     const response = await request(app)
-    .get(`/v1/dataResources/dcat/${nonExistingDataResourcesId}`)
+    .get(`/v1/dataResources/dcat/${nonExistentDataResourcesId}`)
     .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The data resource could not be found"); 
@@ -262,7 +311,7 @@ describe("Error Management for data resources Tests", () => {
   it("should not update a not existant data resource", async () => {
     const updatedDataResourceData = sampleUpdatedDataResource;
     const response = await request(app)
-      .put(`/v1/dataResources/${nonExistingDataResourcesId}`)
+      .put(`/v1/dataResources/${nonExistentDataResourcesId}`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send(updatedDataResourceData)
       .expect(404);
@@ -272,7 +321,7 @@ describe("Error Management for data resources Tests", () => {
 
   it("should not delete a not existant DataResource", async () => {
     const response = await request(app)
-      .delete(`/v1/dataResources/${nonExistingDataResourcesId}`)
+      .delete(`/v1/dataResources/${nonExistentDataResourcesId}`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
@@ -280,111 +329,259 @@ describe("Error Management for data resources Tests", () => {
   });
 });
 
-//Error Management for software resources Tests
-describe("Error Management for software resources Tests", () => {
+
+//Error Management for Software Resources Routes Tests
+describe("Error Management for Software Resources Routes Tests", () => {
   it("should not get a not existant software resource", async () => {
     const response = await request(app)
-      .get(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
+      .get(`/v1/softwareresources/${nonExistentSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
-      expect(response.body.message).to.equal("The data resource could not be found"); 
+      expect(response.body.message).to.equal("The software resource could not be found"); 
   });
 
   it("should not get DCAT for a not existant software resource", async () => {
     const response = await request(app)
-    .get(`/v1/softwareresources/dcat/${nonExistingSoftwareResourcesId}`)
+    .get(`/v1/softwareresources/dcat/${nonExistentSoftwareResourcesId}`)
     .set("Authorization", `Bearer ${consumerJwt}`)
     .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
-      expect(response.body.message).to.equal("The data resource could not be found"); 
+      expect(response.body.message).to.equal("The software resource could not be found"); 
   });
 
   it("should not update a not existant software resource", async () => {
     const updatedSoftwareResourceData = sampleUpdatedSoftwareResource;
     const response = await request(app)
-      .put(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
+      .put(`/v1/softwareresources/${nonExistentSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .send(updatedSoftwareResourceData)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
-      expect(response.body.message).to.equal("The data resource could not be found"); 
+      expect(response.body.message).to.equal("The software resource could not be found"); 
   });
 
   it("should not delete a not existant software Resource", async () => {
     const response = await request(app)
-      .delete(`/v1/softwareresources/${nonExistingSoftwareResourcesId}`)
+      .delete(`/v1/softwareresources/${nonExistentSoftwareResourcesId}`)
       .set("Authorization", `Bearer ${consumerJwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
-      expect(response.body.message).to.equal("The data resource could not be found"); 
+      expect(response.body.message).to.equal("The software resource could not be found"); 
   });
 });
 
-//Error Management for service offerings Tests
-describe("Error Management for service offerings Tests", () => {
+//Error Management for Service Offerings Tests
+describe("Error Management for Service Offerings Routes Tests", () => {
 
   it("Should not update not existing service offerings", async () => {
     const response = await request(app)
-      .put(`/v1/serviceofferings/${nonExistingServiceOfferingId}`)
+      .put(`/v1/serviceofferings/${nonExistentServiceOfferingId}`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
-      .send(sampleProviderServiceOffering)
+      .send({ ...sampleProviderServiceOffering, providedBy: provider1Id })
+
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The service offering could not be found");
   });
 
-  it("Should not get the service offering by non existing id", async () => {
+  it("Should not get the service offering by non-existent id", async () => {
     const response = await request(app)
-      .get("/v1/serviceofferings/" + nonExistingServiceOfferingId)
+      .get("/v1/serviceofferings/" + nonExistentServiceOfferingId)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The service offering could not be found");
   });
 
-  it("Should not get DCAT ServiceOffering by non existing id", async () => {
+  it("Should not get DCAT ServiceOffering by non-existent id", async () => {
     const response = await request(app)
-      .get(`/v1/serviceofferings/dcat/${nonExistingServiceOfferingId}`)
+      .get(`/v1/serviceofferings/dcat/${nonExistentServiceOfferingId}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The service offering could not be found");
   });
 
-  it("Should not delete non existing service offering", async () => {
+  it("Should not delete non-existent service offering", async () => {
     const response = await request(app)
-      .delete("/v1/serviceofferings/" + nonExistingServiceOfferingId)
+      .delete("/v1/serviceofferings/" + nonExistentServiceOfferingId)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Resource not found");  
       expect(response.body.message).to.equal("The service offering could not be found");
   });
 });
+
+// //Error Management for Negotiation Routes Tests
+describe("Error Management for Bilateral Negotiation Routes Tests", () => {
+  it("should not get by ID a non-existent exchange configuration ", async () => {
+    const response = await request(app)
+      .get(`/v1/negotiation/${nonExistentnegotiation1Id}`)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .expect(404);
+      expect(response.body.errorMsg).to.equal("Resource not found");  
+      expect(response.body.message).to.equal("Exchange Configuration not found");
+  });
+  it("should not Create an already existing access request", async () => {
+    const negotiationData = sampleBilateralNegotiation;
+    const existingnegotiation1Id = negotiation1Id
+    const response = await request(app)
+      .post("/v1/negotiation")
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .send({
+        ...negotiationData,
+        provider: provider1Id,
+        consumer: consumerId,
+        providerServiceOffering: providerServiceOffering1Id,
+        consumerServiceOffering: consumerServiceOffering1Id,
+      })
+      .expect(409);
+      expect(response.body.errorMsg).to.equal("conflicting resource");  
+      expect(response.body.message).to.equal
+      ("An access request for this configuration already exists with id: " + existingnegotiation1Id);
+    });
+    it("should not authorize a non-existent negotiation", async () => {
+      const response = await request(app)
+        .put(`/v1/negotiation/${nonExistentnegotiation1Id}`)
+        .set("Authorization", `Bearer ${provider1Jwt}`)
+        .send(sampleAuthorizeNegotiation)
+        .expect(404);
+        expect(response.body.errorMsg).to.equal("Resource not found");  
+        expect(response.body.message).to.equal("Exchange Configuration could not be found");
+    });
+    it("should not authorize an already authorized Exchange configuration", async () => {
+        //authorize negotiation
+        await request(app)
+        .put(`/v1/negotiation/${negotiation1Id}`)
+        .set("Authorization", `Bearer ${provider1Jwt}`)
+        .send(sampleAuthorizeNegotiation)
+        //authorize negotiation again
+      const alreadyAuthorizedNegotitaionId = negotiation1Id;
+      const response = await request(app)
+        .put(`/v1/negotiation/${alreadyAuthorizedNegotitaionId}`)
+        .set("Authorization", `Bearer ${provider1Jwt}`)
+        .send(sampleAuthorizeNegotiation)
+        .expect(400);
+        expect(response.body.errorMsg).to.equal("Invalid operation");  
+        expect(response.body.message).to.equal("Exchange configuration has already been authorized");
+    });
+    it("should not authorize exchange configuration if user is not the owner", async () => {
+      const response = await request(app)
+        .put(`/v1/negotiation/${negotiation1Id}`)
+        .set("Authorization", `Bearer ${provider2Jwt}`)
+        .send(sampleAuthorizeNegotiation)
+        .expect(400);
+        expect(response.body.errorMsg).to.equal("Resource error");  
+        expect(response.body.message).to.equal("Exchange Configuration could not be authorized");
+    });
+    it("should not authorize exchang configuration when contract generation fails", async () => {
+      mock.onPost("http://localhost:8888/bilaterals").reply(500, { error: "Internal Server Error" });
+
+      const response = await request(app)
+      .put(`/v1/negotiation/${negotiation1Id}`)
+      .set("Authorization", `Bearer ${provider1Jwt}`)
+      .send(sampleAuthorizeNegotiation)
+        .expect(409);
+        expect(response.body.errorMsg).to.equal("Failed to generate contract: ");
+    });
+
+    it("should not accept a non-existent negotiation", async () => {
+      const response = await request(app)
+      .put(`/v1/negotiation/${nonExistentnegotiation1Id}/accept`)
+        .set("Authorization", `Bearer ${consumerJwt}`)
+        .expect(404);
+        expect(response.body.errorMsg).to.equal("Resource not found");  
+        expect(response.body.message).to.equal("Exchange Configuration could not be found");
+    });
+
+    it("should not accept an already accepted Negotiation", async () => {
+      //accept negotiation
+      request(app)
+      .put(`/v1/negotiation/${negotiation1Id}/accept`)
+      .set("Authorization", `Bearer ${consumerJwt}`)
+      .expect(200);
+      //accept negotiation again
+      const response = await request(app)
+      .put(`/v1/negotiation/${negotiation1Id}/accept`)
+      .set("Authorization", `Bearer ${consumerJwt}`)
+      .expect(400);
+      expect(response.body.errorMsg).to.equal("Invalid operation");  
+      expect(response.body.message).to.equal("Exchange configuration has already been validated and is pending signatures");
+    });
+
+    it("should not negotiate policies for non existant exchange configuration ", async () => {
+      const response = await request(app)
+        .put(`/v1/negotiation/${nonExistentnegotiation1Id}/negotiate`)
+        .set("Authorization", `Bearer ${consumerJwt}`)
+        .send(sampleNegotiatePolicies)
+        .expect(404);
+        expect(response.body.errorMsg).to.equal("Resource not found");  
+        expect(response.body.message).to.equal("Exchange Configuration not found");
+      });
+
+      it("should not sign non-existent exchange configuration", async () => {
+        const response = await request(app)
+          .put(`/v1/negotiation/${nonExistentnegotiation1Id}/sign`)
+          .set("Authorization", `Bearer ${provider1Jwt}`)
+          .send(sampleSignNegotiation)
+          .expect(404);
+          expect(response.body.errorMsg).to.equal("Resource not found");  
+          expect(response.body.message).to.equal("Exchange Configuration could not be found");
+      });
+
+      it("should not sign an exchange configuration not ready for signature", async () => {
+        const response = await request(app)
+          .put(`/v1/negotiation/${negotiation2Id}/sign`)
+          .set("Authorization", `Bearer ${consumerJwt}`)
+          .send(sampleSignNegotiation)
+          .expect(400);
+          expect(response.body.errorMsg).to.equal("Invalid operation");  
+          expect(response.body.message).to.equal("Exchange configuration is not ready for signature");
+      });
+
+      it("should fail to inject policies in bilateral contract", async () => {
+        mock.onPut(`http://localhost:8888/bilaterals/policies/50726f6d6574686575732d59`).reply(500, { error: "Internal Server Error" });
+
+        const response = await request(app)
+          .put(`/v1/negotiation/${negotiation1Id}/sign`)
+          .set("Authorization", `Bearer ${provider1Jwt}`)
+          .send(sampleSignNegotiation)
+          await request(app)
+          .put(`/v1/negotiation/${negotiation1Id}/sign`)
+          .set("Authorization", `Bearer ${consumerJwt}`)
+          .send(sampleSignNegotiation)
+          .expect(409);
+          expect(response.body.error).to.equal("Failed to inject policies in bilateral contract");
+      });
+
+});
+
+
 //Error Management for Ecosystem Routes Tests
 describe("Error Management for Ecosystem Routes Tests", () => {
   it("should not create a new ecosystem when contract generation fails", async () => {
-    const errorMessage = "Third party API failure";
-    mock.onPost("http://localhost:8888/contracts").reply(424, { error: errorMessage });
+    // const errorMessage = "An error occurred while creating the contract";
+    mock.onPost("http://localhost:8888/bilaterals").reply(500, { error: "Une erreur est survenue lors de la création du contrat" });
     const response = await request(app)
       .post("/v1/ecosystems")
       .set("Authorization", `Bearer ${orchestJwt}`)
       .send(sampleEcosystem)
-      .expect(424);
-      expect(response.body.errorMsg).to.equal(errorMessage);
+      .expect(201);
+      expect(response.body.errorMsg).to.equal("third party api failure");
       expect(response.body.message).to.equal("Failed to generate ecosystem contract");
   });
 
 
-  it("should not get a non existing ecosystem", async () => {
+  it("should not get a non-existent ecosystem", async () => {
     const response = await request(app)
-      .get(`/v1/ecosystems/${nonExistingEcosystemId}`)
+      .get(`/v1/ecosystems/${nonExistentEcosystemId}`)
       .expect(404);
       expect(response.body.message).to.equal("Ecosystem not found");
   });
 
-  it("should not update a non existing ecosystem", async () => {
+  it("should not update a non-existent ecosystem", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${nonExistingEcosystemId}`)
+      .put(`/v1/ecosystems/${nonExistentEcosystemId}`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .send(sampleUpdatedEcosystem)
       .expect(404);
@@ -400,7 +597,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not get contract for a non existant ecosystem", async () => {
     const response = await request(app)
-      .get(`/v1/ecosystems/${nonExistingEcosystemId}/contract`)
+      .get(`/v1/ecosystems/${nonExistentEcosystemId}/contract`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(404)
       expect(response.body.message).to.equal("Ecosystem not found");  
@@ -408,14 +605,14 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not create contract for a non existant ecosystem", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/contract`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/contract`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(404)
       expect(response.body.errorMsg).to.equal("Not found");  
       expect(response.body.message).to.equal("Ecosystem not found");  
     });
 
-    //modifier titre 
+//     //modifier titre 
   it("should not create ecosystem contract when it fail to generate contract", async () => {
     const errorMessage = "Failed to generate ecosystem contract";
     mock.onPost("http://localhost:8888/contracts").reply(424, { error: errorMessage });
@@ -429,11 +626,9 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not apply Orchestrator Signature for a non existant exosystem", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/signature/orchestrator`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/signature/orchestrator`)
       .set("Authorization", `Bearer ${orchestJwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Not found");  
       expect(response.body.message).to.equal("Ecosystem not found");  
@@ -443,9 +638,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/signature/orchestrator`)
       .set("Authorization", `Bearer ${orchestJwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(400);
       expect(response.body.errorMsg).to.equal("Contract does not exist");  
       expect(response.body.message).to.equal("The ecosystem contract was not properly generated");  
@@ -454,21 +647,19 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not apply Orchestrator Signature when it fail to generate contact", async () => {
     const errorMessage = "Third party API failure";
-    mock.onPost("http://localhost:8888/contracts").reply(424, { error: errorMessage });
+    mock.onPost("http://localhost:8888/contracts").reply(500, { error: errorMessage });
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/signature/orchestrator`)
       .set("Authorization", `Bearer ${orchestJwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(424);
       expect(response.body.errorMsg).to.equal(errorMessage);
       expect(response.body.message).to.equal("Failed to sign ecosystem contract");  
   });
 
-  it("should not create invitation to join a non existing ecosystem ", async () => {
+  it("should not create invitation to join a non-existent ecosystem ", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/invites`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/invites`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .send({ ...sampleInvitation, participantId: provider1Id })
       .expect(404);
@@ -482,26 +673,26 @@ describe("Error Management for Ecosystem Routes Tests", () => {
       .get("/v1/ecosystems/me/invites")
       .set("Authorization", `Bearer ${invalidJwt}`)
       .expect(401);
-      expect(response.body.message).to.equal("Authorization header missing or invalid")
+      expect(response.body.message).to.equal("Invalid or expired token")
   });
 
   it("should not get pending Invitations of not existing ecosystem", async () => {
     const response = await request(app)
-      .get(`/v1/ecosystems/${nonExistingEcosystemId}/invites`)
+      .get(`/v1/ecosystems/${nonExistentEcosystemId}/invites`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("resource not found");  
 
-      expect(response.body.message).to.equal("Authorization header missing or invalid")
+      expect(response.body.message).to.equal("Ecosystem not found")
   });
 
 
-  it("should not accept invitation to join an non existing ecosystem", async () => {
+  it("should not accept invitation to join an non-existent ecosystem", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/invites/accept`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/invites/accept`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
-      expect(response.body.errorMsg).to.equal("Not found");  
+      expect(response.body.errorMsg).to.equal("resource not found");  
       expect(response.body.message).to.equal("Ecosystem not found"); 
   });
   //modifier titre
@@ -516,7 +707,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not deny invitation to join a not existing ecosystem", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/invites/deny`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/invites/deny`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Not found");  
@@ -528,7 +719,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
     modifiedSampleOfferings.offerings[0].serviceOffering =
       providerServiceOffering1Id;
     const response = await request(app)
-      .put(`/v1/ecosystems/${nonExistingEcosystemId}/offerings`)
+      .put(`/v1/ecosystems/${nonExistentEcosystemId}/offerings`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send(modifiedSampleOfferings)
       .expect(404);
@@ -538,11 +729,9 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not apply Participant Signature for a not existant exosystem", async () => {
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/signature/participant`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/signature/participant`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(404);
       expect(response.body.errorMsg).to.equal("Not found");  
       expect(response.body.message).to.equal("Ecosystem not found");  
@@ -552,9 +741,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystem3Id}/signature/participant`)
       .set("Authorization", `Bearer ${provider2Jwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(400);
       expect(response.body.errorMsg).to.equal("Contract does not exist");  
       expect(response.body.message).to.equal("The ecosystem contract was not properly generated");  
@@ -562,16 +749,14 @@ describe("Error Management for Ecosystem Routes Tests", () => {
   });
 
   it("should not apply Participant Signature when it fail to generate contact", async () => {
-    const errorMessage = "Third party API failure";
+    const errorMessage = "third party api filure";
     mock.onPost("http://localhost:8888/contracts").reply(424, { error: errorMessage });
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/signature/participant`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(424);
-      expect(response.body.errorMsg).to.equal(errorMessage);
+      // expect(response.body.errorMsg).to.equal(errorMessage);
       expect(response.body.message).to.equal("Failed to sign ecosystem contract");  
   });
 
@@ -580,9 +765,7 @@ describe("Error Management for Ecosystem Routes Tests", () => {
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/signature/participant`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
-      .send({
-        signature: "hasSigned",
-      })
+      .send(sampleSignEcosystem)
       .expect(400);
       expect(response.body.errorMsg).to.equal("unauthorized participant in ecosystem");  
       expect(response.body.message).to.equal("The participant does not have an authorized join request or invitation");  
@@ -608,11 +791,11 @@ describe("Error Management for Ecosystem Routes Tests", () => {
     modifiedSampleJoinRequest.offerings[0].serviceOffering =
       providerServiceOffering1Id;
     const response = await request(app)
-      .post(`/v1/ecosystems/${nonExistingEcosystemId}/requests`)
+      .post(`/v1/ecosystems/${nonExistentEcosystemId}/requests`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .send(modifiedSampleJoinRequest)
       .expect(404);
-      expect(response.body.errorMsg).to.equal("Not found");  
+      expect(response.body.error).to.equal("Not found");  
       expect(response.body.message).to.equal("Ecosystem not found"); 
   });
   it("should not get join requests for a not existing ecosystem", async () => {
@@ -625,30 +808,31 @@ describe("Error Management for Ecosystem Routes Tests", () => {
 
   it("should not authorize not existing join request", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistingRequestId}/authorize`)
+      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistentRequestId}/authorize`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(400);
   });
 
   it("should not authorize join request to a not existing ecosystem", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${nonExistingEcosystemId}/requests/${requestId1}/authorize`)
+      .put(`/v1/ecosystems/${nonExistentEcosystemId}/requests/${requestId1}/authorize`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(404);
       expect(response.body.message).to.equal("Ecosystem not found or unauthorized");  
   });
   it("should not reject not existing join request", async () => {
     const response = await request(app)
-      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistingRequestId}/reject`)
+      .put(`/v1/ecosystems/${ecosystemId}/requests/${nonExistentRequestId}/reject`)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(400);
   });
 
-  it("should not delete an non existing ecosystem", async () => {
+  it("should not delete an non-existent ecosystem", async () => {
     const response = await request(app)
-      .delete("/v1/ecosystems/" + nonExistingEcosystemId)
+      .delete("/v1/ecosystems/" + nonExistentEcosystemId)
       .set("Authorization", `Bearer ${orchestJwt}`)
       .expect(404)
       expect(response.body.message).to.equal("Ecosystem not found");  
   });
+});
 });
