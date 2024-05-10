@@ -80,9 +80,7 @@ export const getDataResourceById = async (
   try {
     const dataResource = await DataResource.findById(req.params.id).lean();
     if (!dataResource) {
-      return res.json({
-        req,
-        res,
+      return res.status(404).json({
         code: 404,
         errorMsg: "Resource not found",
         message: "The data resource could not be found",
@@ -109,9 +107,7 @@ export const getDCATDataResourceById = async (
   try {
     const dataResource = await DataResource.findById(req.params.id).lean();
     if (!dataResource) {
-      return res.json({
-        req,
-        res,
+      return res.status(404).json({
         code: 404,
         errorMsg: "Resource not found",
         message: "The data resource could not be found",

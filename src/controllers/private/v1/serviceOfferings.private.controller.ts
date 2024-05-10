@@ -80,8 +80,6 @@ export const updateServiceOffering = async (
 
     if (!updatedServiceOffering) {
       return res.status(404).json({
-        req,
-        res,
         code: 404,
         errorMsg: "Resource not found",
         message: "The service offering could not be found",
@@ -105,8 +103,6 @@ export const deleteServiceOffering = async (
     );
     if (!serviceOffering) {
       return res.status(404).json({
-        req,
-        res,
         code: 404,
         errorMsg: "Resource not found",
         message: "The service offering could not be found",

@@ -1,6 +1,10 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 
+let bilateralMockUnavailable = false;
+export const setBilateralAvailability = (availability) => {
+  bilateralMockUnavailable = !availability;
+};
 export const mockBilateralContract = () => {
   const mock = new MockAdapter(axios);
   const date = new Date().toISOString();
@@ -17,6 +21,10 @@ export const mockBilateralContract = () => {
 
   mock.onPost(`${contractUrl}`).reply((config) => {
     try {
+      if (bilateralMockUnavailable) {
+        return [500, { error: "Internal Server Error" }];
+      }
+
       const data = JSON.parse(config.data);
       const { ...rest } = data.contract;
       contract = {
@@ -33,6 +41,9 @@ export const mockBilateralContract = () => {
 
   mock.onPut(`${contractUrl}/policies/${contractId}`).reply((config) => {
     try {
+      if (bilateralMockUnavailable) {
+        return [500, { error: "Internal Server Error" }];
+      }
       const injections = JSON.parse(config.data);
       for (const injection of injections) {
         const { ruleId } = injection;
@@ -52,6 +63,9 @@ export const mockBilateralContract = () => {
 
   mock.onPut(`${contractUrl}/sign/${contractId}`).reply((config) => {
     try {
+      if (bilateralMockUnavailable) {
+        return [500, { error: "Internal Server Error" }];
+      }
       const inputSignature = JSON.parse(config.data);
       if (!contract.signatures) {
         contract.signatures = [];
@@ -74,14 +88,19 @@ export const mockBilateralContract = () => {
     }
   });
 
-  mock.onGet(`${contractUrl}/${contractId}`).reply(200, {
-    ...contract,
-    _id: contractId,
+  mock.onGet(`${contractUrl}/${contractId}`).reply((config) => {
+    if (bilateralMockUnavailable) {
+      return [500, { error: "Service indisponible" }];
+    }
+    return [200, { ...contract, _id: contractId }];
   });
 
-  mock
-    .onDelete(`${contractUrl}/${contractId}`)
-    .reply(200, { message: "Contract deleted successfully." });
+  mock.onDelete(`${contractUrl}/${contractId}`).reply((config) => {
+    if (bilateralMockUnavailable) {
+      return [500, { error: "Internal Server Error" }];
+    }
+    return [200, { message: "Contract deleted successfully." }];
+  });
 };
 
 export const mockContract = () => {
