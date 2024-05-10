@@ -118,9 +118,7 @@ export const authorizeExchangeConfiguration = async (
   try {
     const { id } = req.params;
     const { policy } = req.body;
-
     const exchangeConf = await ExchangeConfiguration.findById(id);
-
     if (!exchangeConf) {
       return res.status(404).json({
         code: 404,
@@ -128,7 +126,6 @@ export const authorizeExchangeConfiguration = async (
         message: "Exchange Configuration could not be found",
       });
     }
-
     if (exchangeConf.provider.toString() !== req.user.id.toString()) {
       return res.status(400).json({
         code: 400,
@@ -136,7 +133,6 @@ export const authorizeExchangeConfiguration = async (
         message: "Exchange Configuration could not be authorized",
       });
     }
-
     if (exchangeConf.negotiationStatus === "Authorized") {
       return res.status(400).json({
         code: 400,
@@ -144,11 +140,9 @@ export const authorizeExchangeConfiguration = async (
         message: "Exchange configuration has already been authorized",
       });
     }
-
     if (getDocumentId(exchangeConf.provider) !== req.user.id) {
       return res.status(401).json({ error: "Unauthorized operation" });
     }
-
     try {
       const contract = await generateBilateralContract({
         dataConsumer: exchangeConf.consumer,
@@ -163,13 +157,11 @@ export const authorizeExchangeConfiguration = async (
     } catch (err) {
       return res
         .status(409)
-        .json({ error: "Failed to generate contract: " + err.message });
+        .json({ errorMsg: "Failed to generate contract.", error: err.message });
     }
-
     exchangeConf.providerPolicies = policy;
     exchangeConf.negotiationStatus = "Authorized";
     exchangeConf.latestNegotiator = req.user.id;
-
     await exchangeConf.save();
     return res.status(200).json(exchangeConf);
   } catch (err) {
@@ -222,9 +214,7 @@ export const acceptNegotiation = async (
 ) => {
   try {
     const { id } = req.params;
-
     const exchangeConf = await ExchangeConfiguration.findById(id);
-
     if (!exchangeConf) {
       return res.status(404).json({
         code: 404,
@@ -232,7 +222,6 @@ export const acceptNegotiation = async (
         message: "Exchange Configuration could not be found",
       });
     }
-
     if (exchangeConf.negotiationStatus === "SignatureReady") {
       return res.status(400).json({
         code: 400,
@@ -243,9 +232,7 @@ export const acceptNegotiation = async (
     }
 
     exchangeConf.negotiationStatus = "SignatureReady";
-
     await exchangeConf.save();
-
     return res.json(exchangeConf);
   } catch (err) {
     next(err);
@@ -264,7 +251,6 @@ export const signExchangeConfiguration = async (
   try {
     const { id } = req.params;
     const { signature } = req.body;
-
     const exchangeConf = await ExchangeConfiguration.findById(id).populate<{
       provider: IParticipant;
       consumer: IParticipant;
@@ -290,7 +276,6 @@ export const signExchangeConfiguration = async (
         populate: serviceOfferingPopulation,
       },
     ]);
-
     if (!exchangeConf) {
       return res.status(404).json({
         code: 404,
@@ -298,7 +283,6 @@ export const signExchangeConfiguration = async (
         message: "Exchange Configuration could not be found",
       });
     }
-
     if (exchangeConf.negotiationStatus !== "SignatureReady") {
       return res.status(400).json({
         code: 400,
@@ -306,14 +290,12 @@ export const signExchangeConfiguration = async (
         message: "Exchange configuration is not ready for signature",
       });
     }
-
     const signingParty =
       req.user.id === getDocumentId(exchangeConf.provider)
         ? "provider"
         : "consumer";
 
     exchangeConf.signatures[signingParty] = signature;
-
     try {
       // If both have applied signatures, we can inject the policies
       // this avoid injecting the same policies multiple times
@@ -351,7 +333,6 @@ export const signExchangeConfiguration = async (
     }
 
     await exchangeConf.save();
-
     // The client can handle UI to show depending on the contract status
     return res.json({
       code: 200,

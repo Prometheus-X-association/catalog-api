@@ -87,7 +87,7 @@ export const testErrorProvider1 = {
   email: "provider_1@example.com",
   password: "Password@123!",
   participantName: "provider_Organization1",
-  firstName: "test",
+  firstName: "test1",
   lastName: "provider1",
 };
 export const testErrorProvider2 = {
