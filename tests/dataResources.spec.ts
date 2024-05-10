@@ -20,7 +20,7 @@ let providerId = "";
 let dataResourcesId: "";
 let jwt = "";
 
-describe("Data Resources Routes Tests", function() {
+describe("Data Resources Routes Tests", function () {
   let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -104,7 +104,7 @@ describe("Data Resources Routes Tests", function() {
       .get("/v1/dataResources/me")
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
-      expect(response.body).to.not.be.empty;
+    expect(response.body).to.not.be.empty;
     //assertions
   });
 

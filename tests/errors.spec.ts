@@ -7,10 +7,9 @@ import { Application } from "express";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import {
-  mockBilateralContract,
-  mockContract,
   setBilateralAvailability,
   setContractAvailability,
+  setupMocks,
 } from "./fixtures/fixture.contract";
 
 import {
@@ -91,8 +90,7 @@ describe("Error Management catalog_api Routes Tests", function () {
     await serverInstance.promise;
     app = serverInstance.app;
     server = serverInstance.server;
-    mockContract();
-    mockBilateralContract();
+    setupMocks();
 
     // Create provider1
     const provider1Data = testErrorProvider1;
@@ -266,6 +264,7 @@ describe("Error Management catalog_api Routes Tests", function () {
       .set("Authorization", `Bearer ${orchestJwt}`)
       .send(sampleEcosystem);
     ecosystem2Id = ecosystem2response.body._id;
+
     //orchest sign
     await request(app)
       .post(`/v1/ecosystems/${ecosystem2Id}/signature/orchestrator`)

@@ -5,7 +5,7 @@ config();
 import { startServer } from "../src/server";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { Application } from "express";
-import { mockBilateralContract } from "./fixtures/fixture.contract";
+import { setupMocks } from "./fixtures/fixture.contract";
 import { testProvider4, testConsumer3 } from "./fixtures/testAccount";
 import {
   sampleDataResource,
@@ -47,7 +47,7 @@ describe("Bilateral Negotiation Routes Tests", () => {
     await serverInstance.promise;
     app = serverInstance.app;
     server = serverInstance.server;
-    mockBilateralContract();
+    setupMocks();
 
     //create provider
     const providerData = testProvider4;

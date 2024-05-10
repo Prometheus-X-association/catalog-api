@@ -9,8 +9,7 @@ let contractMockUnavailable = false;
 export const setContractAvailability = (availability) => {
   contractMockUnavailable = !availability;
 };
-export const mockBilateralContract = () => {
-  const mock = new MockAdapter(axios);
+const mockBilateralContract = (mock: MockAdapter) => {
   const date = new Date().toISOString();
   const contractBase = {
     status: "pending",
@@ -106,8 +105,7 @@ export const mockBilateralContract = () => {
   });
 };
 
-export const mockContract = () => {
-  const mock = new MockAdapter(axios);
+const mockContract = (mock: MockAdapter) => {
   const date = new Date().toISOString();
   const contractBase = {
     rolesAndObligations: [],
@@ -237,4 +235,10 @@ export const mockContract = () => {
     }
     return [200, { message: "Contract deleted successfully." }];
   });
+};
+
+export const setupMocks = () => {
+  const mock = new MockAdapter(axios);
+  mockContract(mock);
+  mockBilateralContract(mock);
 };

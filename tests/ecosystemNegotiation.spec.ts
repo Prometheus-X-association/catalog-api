@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { startServer } from "../src/server";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { Application } from "express";
-import { mockContract } from "./fixtures/fixture.contract";
+import { setupMocks } from "./fixtures/fixture.contract";
 
 import {
   testProvider2,
@@ -23,7 +23,7 @@ import {
   sampleUpdatedEcosystem,
   sampleOfferings,
   sampleJoinRequest,
-  sampleSignEcosystem
+  sampleSignEcosystem,
 } from "./fixtures/sampleData";
 import { stub } from "sinon";
 import * as loadMongoose from "../src/config/database";
@@ -69,7 +69,7 @@ describe("Ecosystem routes tests", function () {
     await serverInstance.promise;
     app = serverInstance.app;
     server = serverInstance.server;
-    mockContract();
+    setupMocks();
 
     // Create provider1
     const provider1Data = testProvider2;
@@ -219,8 +219,7 @@ describe("Ecosystem routes tests", function () {
   });
 
   it("should get Ecosystem by ID", async () => {
-    const response = await request(app)
-      .get(`/v1/ecosystems/${ecosystemId}`)
+    const response = await request(app).get(`/v1/ecosystems/${ecosystemId}`);
     expect(response.status).to.equal(200);
     expect(response.body).to.not.be.empty;
     expect(response.body._id).to.equal(ecosystemId);
@@ -308,7 +307,7 @@ describe("Ecosystem routes tests", function () {
       .post(`/v1/ecosystems/${ecosystemId}/invites/accept`)
       .set("Authorization", `Bearer ${provider1Jwt}`)
       .expect(200);
-      expect(response.body.invitations[0].status).to.equal("Authorized");
+    expect(response.body.invitations[0].status).to.equal("Authorized");
   });
 
   it("should deny invitation to join ecosystem", async () => {
@@ -316,7 +315,7 @@ describe("Ecosystem routes tests", function () {
       .post(`/v1/ecosystems/${ecosystemId}/invites/deny`)
       .set("Authorization", `Bearer ${consumer1Jwt}`)
       .expect(200);
-      // expect(response.body.invitations[1].status).to.equal("Rejected");
+    // expect(response.body.invitations[1].status).to.equal("Rejected");
   });
 
   it("should configure Participant Ecosystem Offerings", async () => {
@@ -337,12 +336,12 @@ describe("Ecosystem routes tests", function () {
       .send(sampleSignEcosystem)
       .expect(200);
     expect(response.body.message).to.equal("successfully signed contract");
-
   });
 
   it("should get Ecosystems for a single participant", async () => {
-    const response = await request(app)
-      .get(`/v1/ecosystems/participant/${orchestId}`)
+    const response = await request(app).get(
+      `/v1/ecosystems/participant/${orchestId}`
+    );
     expect(response.status).to.equal(200);
     expect(response.body).to.not.be.empty;
     expect(response.body.orchestrator).to.equal(orchestId);
@@ -350,7 +349,8 @@ describe("Ecosystem routes tests", function () {
 
   it("should create join request by a data provider", async () => {
     const modifiedSampleJoinRequest = { ...sampleJoinRequest };
-    modifiedSampleJoinRequest.offerings[0].serviceOffering = providerServiceOffering2Id;
+    modifiedSampleJoinRequest.offerings[0].serviceOffering =
+      providerServiceOffering2Id;
     const response = await request(app)
       .post(`/v1/ecosystems/${ecosystemId}/requests`)
       .set("Authorization", `Bearer ${provider2Jwt}`)
@@ -399,15 +399,15 @@ describe("Ecosystem routes tests", function () {
   });
 
   it("should get all Ecosystems", async () => {
-    const response = await request(app)
-      .get(`/v1/ecosystems`)
+    const response = await request(app).get(`/v1/ecosystems`);
     expect(response.status).to.equal(200);
     expect(response.body).to.be.an("array").and.to.not.be.empty;
   });
 
   it("should get Circulating Resources In Ecosystem", async () => {
-    const response = await request(app)
-      .get(`/v1/ecosystems/${ecosystemId}/circulating`)
+    const response = await request(app).get(
+      `/v1/ecosystems/${ecosystemId}/circulating`
+    );
     expect(response.status).to.equal(200);
     expect(response.body).to.not.be.empty;
   });
@@ -419,5 +419,4 @@ describe("Ecosystem routes tests", function () {
 
     expect(response.status).to.equal(200);
   });
-
 });
