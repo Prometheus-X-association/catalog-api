@@ -8,7 +8,7 @@ export const testParticipantOrganizationAdmin = {
 export const testOrchestrator = {
   email: "orchestrator@example.com",
   password: "Password@123!",
-  participantName: "orchestOrganization1",
+  participantName: "orchestOrganization",
   firstName: "test",
   lastName: "orchest",
 };
@@ -76,12 +76,26 @@ export const testConsumer4 = {
   lastName: "consumer4",
 };
 
-export const testErrorOrchest = {
+export const testErrorOrchest1 = {
+  email: "orchest1@example.com",
+  password: "Password@123!",
+  participantName: "orchest_Organization1",
+  firstName: "test1",
+  lastName: "orchesterror1",
+};
+export const testErrorOrchest2 = {
   email: "orchest2@example.com",
   password: "Password@123!",
   participantName: "orchest_Organization2",
   firstName: "test2",
-  lastName: "orchest2",
+  lastName: "orchesterror2",
+};
+export const testErrorOrchest3 = {
+  email: "orchest3@example.com",
+  password: "Password@123!",
+  participantName: "orchest_Organization3",
+  firstName: "test3",
+  lastName: "orchesterror3",
 };
 export const testErrorProvider1 = {
   email: "provider_1@example.com",
