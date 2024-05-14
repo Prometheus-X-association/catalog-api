@@ -686,7 +686,7 @@ describe("Error Management catalog_api Routes Tests", function () {
       expect(response.body.errorMsg).to.equal("Failed to generate contract.");
     });
 
-    // A VERIFIER
+    // next tests
     // it("should fail to inject policies in bilateral contract", async () => {
     //   const response = await request(app)
     //     .put(`/v1/negotiation/${negotiation1Id}/sign`)
