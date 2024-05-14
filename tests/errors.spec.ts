@@ -720,8 +720,8 @@ describe("Error Management catalog_api Routes Tests", function () {
         .expect(404);
       expect(response.body.message).to.equal("Ecosystem not found");
     });
-    //modifier titre
-    it("should not get an ecosystem contract not yet generated", async () => {
+
+    it("should not get an ecosystem contract not yet created", async () => {
       const response = await request(app)
         .get(`/v1/ecosystems/${ecosystem1Id}/contract`)
         .set("Authorization", `Bearer ${orchest1Jwt}`)
@@ -746,7 +746,7 @@ describe("Error Management catalog_api Routes Tests", function () {
       expect(response.body.message).to.equal("Ecosystem not found");
     });
 
-    it("should not apply Orchestrator Signature for a non existant exosystem", async () => {
+    it("should not apply Orchestrator Signature for a non existant ecosystem", async () => {
       const response = await request(app)
         .post(`/v1/ecosystems/${nonExistentEcosystemId}/signature/orchestrator`)
         .set("Authorization", `Bearer ${orchest1Jwt}`)
@@ -805,7 +805,7 @@ describe("Error Management catalog_api Routes Tests", function () {
       expect(response.body.errorMsg).to.equal("resource not found");
       expect(response.body.message).to.equal("Ecosystem not found");
     });
-    //modifier titre
+
     it("should not accept an invitation from participant not invited to join", async () => {
       const response = await request(app)
         .post(`/v1/ecosystems/${ecosystem1Id}/invites/accept`)

@@ -39,6 +39,7 @@ let provider2Id = "";
 let orchestId = "";
 let consumer1Id = "";
 let consumer2Id = "";
+let organization1Id = "";
 let dataResource1Id = "";
 let dataResource2Id = "";
 let softwareResource1Id: "";
@@ -57,6 +58,7 @@ let requestId2: "";
 let ecosystemId = "";
 
 describe("Ecosystem routes tests", function () {
+  this.timeout(30000)
   let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -77,6 +79,8 @@ describe("Ecosystem routes tests", function () {
       .post("/v1/auth/signup")
       .send(provider1Data);
     provider1Id = provider1Response.body.participant._id;
+    organization1Id = provider1Response.body.admin.organization;
+
 
     // Create provider2
     const provider2Data = testProvider3;
@@ -338,9 +342,18 @@ describe("Ecosystem routes tests", function () {
     expect(response.body.message).to.equal("successfully signed contract");
   });
 
-  it("should get Ecosystems for a single participant", async () => {
+  it("should get Ecosystems for a single orchestrator", async () => {
     const response = await request(app).get(
       `/v1/ecosystems/participant/${orchestId}`
+    );
+    expect(response.status).to.equal(200);
+    expect(response.body).to.not.be.empty;
+    expect(response.body.orchestrator).to.equal(orchestId);
+  });
+
+  it("should get Ecosystems for a single participant", async () => {
+    const response = await request(app).get(
+      `/v1/ecosystems/participant/${organization1Id}`
     );
     expect(response.status).to.equal(200);
     expect(response.body).to.not.be.empty;
