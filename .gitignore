@@ -3,3 +3,6 @@ dist
 .env
 mochawesome-report/
 .vscode/
+terraform/.terraform
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars

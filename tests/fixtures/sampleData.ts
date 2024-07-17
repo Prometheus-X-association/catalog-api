@@ -383,3 +383,19 @@ export const sampleUpdatedSoftwareResource = {
   category: "5f8ed518651f1648e0d8162d",
   locationAddress:[]
 };
+
+export const sampleRepresentation = (resourceID: string) => {
+  return {
+    resourceID: resourceID,
+    url: "http://test.api.com/{userId}",
+    credential: "5f8ed518651f1648e0d8162d"
+  }
+};
+
+export const sampleUpdatedRepresentation = (resourceID: string) => {
+  return {
+    resourceID: resourceID,
+    url: "http://test.api.com/test/{userId}",
+    credential: "5f8ed518651f1648e0d8162b"
+  }
+};

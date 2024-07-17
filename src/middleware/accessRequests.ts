@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import {
   ecosystemAccessRequestInvitationSchema,
   ecosystemAccessRequestSchema,
+  // @ts-ignore
 } from "../libs/joi/ecosystemSchemas";
 
 /**

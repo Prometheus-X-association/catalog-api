@@ -3,6 +3,7 @@ import { buildResolvableSelfDescriptionURI } from "../../../libs/self-descriptio
 import { SoftwareResource } from "../../../models";
 import { mapSoftwareResource } from "../../../libs/dcat";
 import { GlobalPurpose } from "../../../models/GlobalPurpose";
+import { Representation } from "../../../models/Representation";
 
 const DEFAULT_QUERY_OPTIONS = {
   page: 0,
@@ -51,7 +52,7 @@ export const getParticipantSoftwareResources = async (
       SoftwareResource.find({
         providedBy: req.user.id,
       })
-        .populate([{ path: "category", model: GlobalPurpose }])
+        .populate([{ path: "category", model: GlobalPurpose }, { path: "representation", model: Representation }])
         .limit(queryOptions?.limit)
         .skip(queryOptions?.page * queryOptions?.limit)
         .lean(),
@@ -92,7 +93,7 @@ export const getSoftwareResourceById = async (
   try {
     const softwareResource = await SoftwareResource.findById(
       req.params.id
-    ).lean();
+    ).populate([{ path: "representation", model: Representation }]).lean();
     if (!softwareResource) {
       return res.status(404).json({
         code: 404,
@@ -123,7 +124,7 @@ export const getDCATSoftwareResourceById = async (
   try {
     const softwareResource = await SoftwareResource.findById(
       req.params.id
-    ).lean();
+    ).populate([{ path: "representation", model: Representation }]).lean();
     if (!softwareResource) {
       return res.status(404).json({
         code: 404,

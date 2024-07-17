@@ -7,8 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000/v1",
-      "description": "API Server"
+      "url": "/v1"
     }
   ],
   "tags": [
@@ -35,6 +34,10 @@
     {
       "name": "Negotiation",
       "description": "Endpoints related to management of negotiation on service offerings"
+    },
+    {
+      "name": "Representations",
+      "description": "Endpoints related to management of representation on data resource and software resource"
     }
   ],
   "paths": {
@@ -1713,6 +1716,163 @@
           }
         }
       }
+    },
+
+    "/representations": {
+      "post": {
+        "summary": "Creates a new Representation for the authenticated participant",
+        "tags": ["Representations"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Representation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful response with the created Representation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Representation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong URL format"
+          }
+        }
+      }
+    },
+    "/representations/{id}": {
+      "get": {
+        "summary": "Retrieves a single Representation by its ID",
+        "tags": ["Representations"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Representation to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with the Representation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Representation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Representation not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Updates a representation by its ID",
+        "tags": ["Representations"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the representation to update"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Representation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with the updated Representation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Representation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong URL format"
+          },
+          "404": {
+            "description": "Representation not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a Representation by its ID",
+        "tags": ["Representations"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Representation to delete"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with the deleted Representation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Representation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Representation not found"
+          }
+        }
+      }
     }
   },
 
@@ -2076,6 +2236,24 @@
             "description": "The differend values of the policy to configure based on the rule's requiredFields"
           }
         }
+      },
+      "Representation": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "resourceID": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "credential": {
+            "type": "string"
+          }
+        },
+        "required": ["resourceID", "url"]
       }
     }
   }

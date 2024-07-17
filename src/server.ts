@@ -6,6 +6,7 @@ import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import swaggerUI from "swagger-ui-express";
 import swaggerSpec from "../docs/swagger.json";
 import { CONFIG } from "./config/environment";
+import routes from "./libs/loaders/routes";
 import { setupRoutes } from "./routes";
 
 export const startServer = async (testPort?: number) => {
@@ -22,6 +23,7 @@ export const startServer = async (testPort?: number) => {
   });
   app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
+  // routes(app);
   await setupRoutes(app);
 
   app.use(invalidEndpointHandler);
@@ -34,7 +36,7 @@ export const startServer = async (testPort?: number) => {
   });
   const server = app.listen(port, () => {
     //eslint-disable-next-line
-    console.log(`Catalog-Registry running on: http://localhost:${port}`);
+    console.log(`Catalog-API running on: http://localhost:${port}`);
     resolve(); // Resolve the promise from the outside
   });
 

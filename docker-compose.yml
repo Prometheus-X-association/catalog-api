@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  catalog-api:
+    container_name: "catalog-api"
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: catalog-api:latest
+    ports:
+      - "${PORT}:${PORT}"
+    links:
+      - mongodb
+    env_file:
+      - .env
+    networks:
+      - catalog-api
+      - ptx
+
+  mongodb:
+    container_name: "catalog-api-mongodb"
+    build:
+      context: .
+      dockerfile: docker/mongodb/Dockerfile
+#    Uncomment to connect mongodb container to mongo compass or another service
+#    ports:
+#      - "27017:27017"
+    volumes:
+      - catalog_data:/data/db
+    networks:
+      - catalog-api
+
+networks:
+  catalog-api:
+    name: catalog-api
+    driver: bridge
+  ptx:
+    name: ptx
+    external: true
+
+volumes:
+  catalog_data:

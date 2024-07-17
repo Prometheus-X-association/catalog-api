@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+.vscode
+node_modules/
+npm-debug.log
+.prettierrc
+.git/
+.gitignore
+README.md
+# src/tests

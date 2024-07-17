@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Schema, Types } from "mongoose";
 import {
   ISoftwareResource,
   ISoftwareResourceModel,
@@ -23,6 +23,7 @@ export const softwareResourceSchema = new Schema<
     users_clients: { type: Number },
     demo_link: { type: String },
     relevant_project_link: { type: String },
+    representation: { type: String, ref: "Representation" },
     schema_version: { type: String, default: "1.1.0" },
   },
   {

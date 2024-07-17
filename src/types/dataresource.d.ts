@@ -46,6 +46,11 @@ export interface IDataResource extends AllSchemas, VirtualResource {
    * @specification VisionsTrust
    */
   category: string;
+
+  /**
+   * Representation of the resource
+   */
+  representation?: string;
 }
 
 export interface IDataResourceMethods {}

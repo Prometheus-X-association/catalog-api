@@ -5,6 +5,7 @@ import { mapCatalog, mapDataResource } from "../../../libs/dcat";
 import { ResourceTypes } from "../../../libs/dcat/types";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { GlobalDataType } from "../../../models/GlobalDataType";
+import { Representation } from "../../../models/Representation";
 
 const DEFAULT_QUERY_OPTIONS = {
   page: 0,
@@ -39,7 +40,7 @@ export const getDataResources = async (
 
     const [resources, count] = await Promise.all([
       query
-        .populate([{ path: "category", model: GlobalDataType }])
+        .populate([{ path: "category", model: GlobalDataType }, { path: "representation", model: Representation }])
         .limit(queryOptions?.limit)
         .skip(queryOptions?.page * queryOptions?.limit)
         .lean(),
@@ -78,7 +79,7 @@ export const getDataResourceById = async (
   next: NextFunction
 ) => {
   try {
-    const dataResource = await DataResource.findById(req.params.id).lean();
+    const dataResource = await DataResource.findById(req.params.id).populate([{ path: "representation", model: Representation }]).lean();
     if (!dataResource) {
       return res.status(404).json({
         code: 404,

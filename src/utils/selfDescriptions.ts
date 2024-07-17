@@ -1,9 +1,7 @@
-import {
-  IDataOffering,
-  IEcosystem,
-  IParticipant,
-  IServiceOffering,
-} from "../types/models";
+import { IEcosystem } from "../types/ecosystem";
+import { IParticipant } from "../types/participant";
+import { IServiceOffering } from "../types/serviceoffering";
+import { ISoftwareResource } from "../types/softwareresource";
 
 /**
  * Generates a JSON-LD for the ecosystem based on the schema
@@ -29,192 +27,49 @@ export const ecosystemToSelfDescription = (
     },
     "@type": "ecosystem",
     name: e.name,
-    purposeAndGoals: {
-      keyPurpose: {
-        "@type": "xsd:string",
-        "@value": e.purposeAndGoals.keyPurpose || "",
-      },
-      principles: e.purposeAndGoals.principles || [],
-      useCases: e.purposeAndGoals.useCases || [],
-    },
     rolesAndResponsibilities: {
-      stakeholders: e.rolesAndResponsibilities.stakeholders.map(
-        (stakeholder) => {
-          const organization = {
-            "@type": "schema:Organization",
-            "@id": stakeholder.organisation,
-            "schema:name": stakeholder.organisation,
-            "did:identifier": stakeholder.organisation,
-          };
-
-          return {
-            organisation: organization,
-            role: stakeholder.role,
-            dataOfferings: stakeholder.dataOfferings || [],
-            serviceOfferings: stakeholder.serviceOfferings || [],
-          };
-        }
-      ),
+      stakeholders: {
+        organisation: {
+          "@type": "schema:Organization",
+          "@id": e.rolesAndResponsibilities.stakeholders.did,
+          "schema:name": e.rolesAndResponsibilities.stakeholders.legalName,
+          "did:identifier": e.rolesAndResponsibilities.stakeholders.did,
+        },
+      },
     },
     businessLogic: {
       businessModel: e.businessLogic.businessModel,
-      payingParties: {
-        direction: e.businessLogic.payingParties.direction || [],
-        payers: e.businessLogic.payingParties.payers || [],
-      },
-      businessCase: {
-        definition: e.businessLogic.businessCase.definition || "",
-        ecosystemSharing: {
-          role: e.businessLogic.ecosystemSharing.role,
-          valueSharing: {
-            businessModel:
-              e.businessLogic.ecosystemSharing.valueSharing.businessModel,
-            valueNetwork: {
-              direction:
-                e.businessLogic.ecosystemSharing.valueSharing.valueNetwork
-                  .direction,
-            },
-            payers: e.businessLogic.ecosystemSharing.valueSharing.payers || [],
-          },
-        },
-        revenueModel: {
-          businessModel:
-            e.businessLogic.ecosystemSharing.revenueModel.businessModel || [],
-          payingParties: {
-            direction:
-              e.businessLogic.ecosystemSharing.revenueModel.payingParties
-                .direction || [],
-            payers:
-              e.businessLogic.ecosystemSharing.revenueModel.payingParties
-                .payers || [],
-          },
-        },
-        benefits: e.businessLogic.ecosystemSharing.benefits || [],
-        costs: e.businessLogic.ecosystemSharing.costs || [],
-      },
     },
     dataValue: {
-      pricingModel: e.dataValue.pricingModel,
       dataValueSolution: {
         provider: {
           "@type": "schema:Organization",
-          "@id": e.dataValue.dataValueSolution.provider?._id,
-          "schema:name":
-            e.dataValue.dataValueSolution.provider?.hasLegallyBindingName,
-          "did:identifier": e.dataValue.dataValueSolution.provider?.id,
+          "@id": e.dataValue.dataValueSolution.provider?.did,
+          "schema:name": e.dataValue.dataValueSolution.provider?.legalName,
+          "did:identifier": e.dataValue.dataValueSolution.provider?.did,
         },
         offering: {
           "@type": "schema:Organization",
-          "@id": e.dataValue.dataValueSolution.offering?._id,
-          "schema:name":
-            e.dataValue.dataValueSolution.offering?.hasLegallyBindingName,
-          "did:identifier": e.dataValue.dataValueSolution.offering?.id,
+          "@id": e.dataValue.dataValueSolution.offering?.did,
+          "schema:name": e.dataValue.dataValueSolution.offering?.legalName,
+          "did:identifier": e.dataValue.dataValueSolution.offering?.did,
         },
-        buildingBlock: e.dataValue.dataValueSolution.buildingBlock || "",
       },
       dataNetworkSolutions: e.dataValue.dataNetworkSolutions.map((dn) => {
         return {
           "@context": {
             typeEnum: ["buy", "rent", "build"],
           },
-          type: {
-            "@type": "typeEnum",
-            "@value": e.dataValue.dataNetworkSolutions.type,
-          },
           pays: dn.pays.map((payer) => {
             return {
               "@type": "schema:Organization",
-              "@id": payer?._id,
-              "schema:name": payer?.hasLegallyBindingName,
-              "did:identifier": payer?.id,
+              "@id": payer?.did,
+              "schema:name": payer?.legalName,
+              "did:identifier": payer?.did,
             };
           }),
         };
       }),
-      levelOfCommitment: e.dataValue.levelOfCommitment || [],
-    },
-    governance: {
-      governancePrinciples: e.governance.governancePrinciples || [],
-      decisionModel: {
-        perimeter: e.governance.decisionModel.perimeter || "",
-        decisionProcess: e.governance.decisionModel.decisionProcess || "",
-      },
-    },
-    dataServicesInfrastructure: {
-      infrastructureServices:
-        e.dataServicesInfrastructure.infrastructureServices || [],
-      dataUsageControl: e.dataServicesInfrastructure.dataUsageControl || [],
-      consentManagement: e.dataServicesInfrastructure.consentManagement || [],
-      dataQuality: e.dataServicesInfrastructure.dataQuality || [],
-      operationalMonitoring:
-        e.dataServicesInfrastructure.operationalMonitoring || [],
-      issuesQuestions: e.dataServicesInfrastructure.issuesQuestions || "",
-      links: e.dataServicesInfrastructure.links || [],
-    },
-    systemDesignAndArchitecture: {
-      systemPrinciples: {
-        buildingBlocks:
-          e.systemDesignAndArchitecture.systemPrinciples.buildingBlocks || [],
-        requirements:
-          e.systemDesignAndArchitecture.systemPrinciples.requirements || [],
-        architecture:
-          e.systemDesignAndArchitecture.systemPrinciples.architecture || [],
-      },
-      metadataFormats:
-        e.systemDesignAndArchitecture.metadataFormats || ([] as object[]),
-    },
-    functionalRequirements: {
-      technicalInterfaces: e.functionalRequirements.technicalInterfaces.map(
-        (i) => {
-          return {
-            name: i.name || "",
-            link: i.link || "",
-            evolutionType: i.evolutionType || "",
-          };
-        }
-      ),
-      acIdentities: e.functionalRequirements.acIdentities || [],
-      dataUsageControlSolutions:
-        e.functionalRequirements.dataUsageControlSolutions || [],
-      transactionManagement:
-        e.functionalRequirements.transactionManagement || [],
-      dataGovernanceSolution:
-        e.functionalRequirements.dataGovernanceSolution || [],
-    },
-    informationManagement: {
-      dataServices: e.informationManagement.dataServices || [],
-      dataQuality: e.informationManagement.dataQuality || [],
-    },
-    security: {
-      threatAssessment: {
-        methods: e.security.threatAssessment.methods || [],
-        standards: e.security.threatAssessment.standards || [],
-        threats: e.security.threatAssessment.threats || [],
-        securityObjectives:
-          e.security.threatAssessment.securityObjectives || [],
-      },
-      riskManagementTools: e.security.riskManagementTools || [],
-    },
-    privacyAndPersonalData: {
-      inclusionPersonalData: e.privacyAndPersonalData.inclusionPersonalData,
-      PersonalDataManagementSolution:
-        e.privacyAndPersonalData.PersonalDataManagementSolution || [],
-    },
-    needs: {
-      data:
-        e.needs?.data?.map((d) => {
-          return {
-            "dcat:theme": d.theme,
-            "dcat:keyword": d.keyword,
-          };
-        }) || [],
-      services:
-        e.needs?.services?.map((s) => {
-          return {
-            "dcat:theme": s.theme,
-            "dcat:keyword": s.keyword,
-          };
-        }) || [],
     },
   };
 
@@ -236,55 +91,32 @@ export const participantToSelfDescription = (p: IParticipant) => {
       dcterms: "http://purl.org/dc/terms/",
       did: "https://www.w3.org/TR/did-core/#",
     },
-    "@id": p.id,
+    "@id": p.did,
     "@type": "Participant",
-    "did:identifier": p.identifier,
-    "gax-participant:hasLegallyBindingName": p?.hasLegallyBindingName,
-    address: {
+    "did:identifier": p.did,
+    "gax-participant:hasLegallyBindingName": p?.legalName,
+    headquartersAddress: {
       "@type": "schema:PostalAddress",
-      "schema:addressLocality": p.address.addressLocality,
-      "schema:addressRegion": p.address.addressRegion,
-      "schema:postalCode": p.address.postalCode,
-      "schema:streetAddress": p.address.streetAddress,
+      "schema:countryCode": p.legalPerson.headquartersAddress.countryCode,
     },
-    url: {
-      "@type": "xsd:anyURI",
-      "@value": p.url,
+    legalAddress: {
+      "@type": "schema:PostalAddress",
+      "schema:countryCode": p.legalPerson.legalAddress.countryCode,
     },
-    description: {
-      "@type": "xsd:string",
-      "@value": p.description,
-    },
-    "gax-participant:hasBusinessIdentifier": p.hasBusinessIdentifier,
-    "gax-participant:hasLogo": {
-      "@value": p.hasLogo,
-      "@type": "xsd:anyURI",
-    },
-    "gax-participant:hasMemberParticipant": p.hasMemberParticipant.map(
+    "gax-participant:hasBusinessIdentifier": p.legalPerson.registrationNumber,
+    "gax-participant:hasMemberParticipant": p.legalPerson.subOrganization.map(
       (member) => {
         return {
-          "@id": member.id,
-          "did:identifier": member.id,
+          "@id": member,
         };
       }
     ),
-    contactPoint: p.contactPoint.map((contact) => {
-      return {
-        "@type": "schema:ContactPoint",
-        "schema:email": contact.email,
-        "schema:telephone": contact.telephone,
-        "schema:contactType": contact.contactType,
-      };
-    }),
-    "gax-participant:hasCompanyType": p.hasCompanyType,
-    "gax-participant:hasPhoneNumber": p.hasPhoneNumber,
-    "gax-participant:hasMemberPerson": p.hasMemberPerson.map((person) => {
-      return {
-        "@type": "schema:Person",
-        "schema:name": person.name,
-      };
-    }),
-    email: p.email,
+    "dcterms:termsAndConditions": {
+      "@value": p.termsAndConditions,
+    },
+    "schema:termsAndConditions": {
+      "@value": p.termsAndConditions,
+    },
   };
 
   return JSON.stringify(jsonLd, null, 2);
@@ -294,7 +126,7 @@ export const participantToSelfDescription = (p: IParticipant) => {
  * Generates a JSON-LD for the Data Offering based on the schema
  * @todo Understand fields hasPart and hasPolicy to better exploit them
  */
-export const dataOfferingToSelfDescription = (d: IDataOffering) => {
+export const dataOfferingToSelfDescription = (d: ISoftwareResource) => {
   const jsonLD = {
     "@context": {
       dcat: "http://www.w3.org/ns/dcat#",
@@ -306,18 +138,11 @@ export const dataOfferingToSelfDescription = (d: IDataOffering) => {
     },
     "@id": "dap:d33937",
     "@type": "dcat:Dataset",
-    "dcterms:title": {
-      "@value": d.title,
-      "@language": "en",
-    },
-    "dcterms:conformsTo": {
-      "@id": "TODO",
-    },
     "dcterms:description": {
       "@value": d.description,
       "@language": "en",
     },
-    "dcterms:identifier": d.identifier,
+    "dcterms:providedBy": d.providedBy,
     "dcterms:issued": {
       "@value": d.createdAt,
       "@type": "xsd:date",
@@ -325,74 +150,25 @@ export const dataOfferingToSelfDescription = (d: IDataOffering) => {
     "dcterms:license": {
       "@id": d.license,
     },
-    "dcterms:publisher": {
-      "@id": d.publisher,
-    },
-    // "dcterms:hasPart": d.hasPart.map((part) => ({
-    //   "@id": part.id,
-    //   "@type": "foaf:Document",
-    //   "dcterms:type": part.type,
-    //   "dcterms:format": part.format,
-    //   "dcterms:description": {
-    //     "@value": part.description,
-    //     "@language": "en",
-    //   },
-    //   "dcterms:issued": {
-    //     "@value": part.issued,
-    //     "@type": "xsd:date",
-    //   },
-    //   "dcterms:title": {
-    //     "@value": part.title,
-    //     "@language": "en",
-    //   },
-    // })),
-    // "dcat:distribution": d.distribution.map((distribution) => ({
-    //   "@type": "dcat:Distribution",
-    //   "dcterms:identifier": distribution.identifier,
-    //   "dcterms:title": {
-    //     "@value": distribution.title,
-    //     "@language": "en",
-    //   },
-    //   "dcat:mediaType": distribution.mediaType,
-    //   "odrl:hasPolicy": {
-    //     "@type": "Policy",
-    //     "odrl:permission": distribution.permissions.map((permission) => ({
-    //       "@type": "Permission",
-    //       "odrl:action": permission.action,
-    //       "odrl:target": permission.target,
-    //     })),
-    //   },
-    // })),
-    "odrl:hasPolicy": d.hasPolicy.map((policy) => ({
-      "@context": {
-        "@vocab": "https://www.w3.org/TR/odrl-model/",
-      },
-      "@id": policy,
-      // permission: policy.permissions.map((permission) => ({
-      //   action: permission.action,
-      //   constraint: permission.constraints.map((constraint) => ({
-      //     leftOperand: {
-      //       "@value": constraint.leftOperand,
-      //     },
-      //     rightOperand: {
-      //       "@value": constraint.rightOperand,
-      //     },
-      //     operator: constraint.operator,
-      //   })),
-      //   duty: permission.duty,
-      // })),
-      // prohibition: policy.prohibition,
-      // obligation: policy.obligation,
+    "dcterms:dataProtectionRegime": d.exposedThrough.map((exposedThrough) => ({
+      "@id": exposedThrough,
     })),
-    "dcat:landingPage": {
-      "@id": d.landingPage,
+    "dcterms:category": {
+      "@id": d.category,
     },
-    "dcterms:accrualPeriodicity": d.accrualPeriodicity,
-    "gax-core:offeredBy": d.offeredBy.map((offeredBy) => ({
-      "@id": offeredBy.id,
+    "schema:locationAddress": d.locationAddress.map((locationAddress) => ({
+      "@type": "locationAddress",
+      "dcterms:requestType": locationAddress.countryCode,
     })),
-    "dcat:theme": d.theme,
-    "dcat:keyword": d.keyword,
+    "dcterms:users_clients": {
+      "@id": d.users_clients,
+    },
+    "dcterms:demo_link": {
+      "@id": d.demo_link,
+    },
+    "dcterms:relevant_project_link": {
+      "@id": d.relevant_project_link,
+    },
   };
 
   return JSON.stringify(jsonLD, null, 2);
@@ -416,55 +192,40 @@ export const serviceToSelfDescription = (s: IServiceOffering) => {
     },
     "@id": "did:web:http://example.com/registry/service",
     "@type": "ServiceOffering",
-    "gax-core:offeredBy": s.offeredBy.map((offeredBy) => ({
-      "@id": offeredBy.id,
-    })),
     "dcterms:title": {
-      "@value": s.title,
+      "@value": s.name,
       "@type": "xsd:string",
     },
-    "schema:image": {
-      "@value": "TODO",
-      "@type": "xsd:anyURI",
+    "schema:providedBy": {
+      "@value": s.providedBy,
+      "@type": "xsd:string",
     },
     "dcterms:description": {
       "@value": s.description,
       "@type": "xsd:string",
     },
-    "dcat:landingPage": {
-      "@value": s.landingPage,
-      "@type": "xsd:anyURI",
-    },
-    "dcat:distribution": s.distribution.map((distribution) => ({
-      "@id": distribution,
+    "dcat:dependsOn": s.dependsOn.map((dependsOn) => ({
+      "@id": dependsOn,
     })),
-    "dcterms:accrualPeriodicity": {
-      "@id": s.accrualPeriodicity,
-    },
-    "dcterms:subject": {
-      "@id": s.subject,
-    },
-    "dcterms:spatial": {
-      "@id": s.spatial,
-    },
-    "dcterms:license": {
-      "@id": s.license,
-    },
-    "dcat:temporalResolution": {
-      "@id": s.temporalResolution,
-    },
-    "dcat:theme": s.theme,
-    "dcat:keyword": s.keyword,
-    // "schema:hasPart": {
-    //   "@type": "CertificateScope",
-    //   "schema:partOf": {
-    //     "@id": s.partOf,
-    //   },
-    //   "schema:scope": {
-    //     "@value": s.scope,
-    //     "@type": "xsd:string",
-    //   },
-    // },
+    "dcat:aggregationOf": s.aggregationOf.map((aggregationOf) => ({
+      "@id": aggregationOf,
+    })),
+    "dcat:policy": s.policy.map((policy) => ({
+      "@id": policy,
+    })),
+    "dcat:dataProtectionRegime": s.dataProtectionRegime.map(
+      (dataProtectionRegime) => ({
+        "@id": dataProtectionRegime,
+      })
+    ),
+    "schema:dataAccountExport": s.dataAccountExport.map(
+      (dataAccountExport) => ({
+        "@type": "dataAccountExport",
+        "dcat:requestType": dataAccountExport.requestType,
+        "dcat:accessType": dataAccountExport.accessType,
+        "dcat:formatType": dataAccountExport.formatType,
+      })
+    ),
   };
 
   return JSON.stringify(jsonLD, null, 2);

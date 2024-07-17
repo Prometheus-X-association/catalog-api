@@ -1,4 +1,4 @@
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 import { AllSchemas } from "./models";
 import { VirtualResource } from "./virtualresource";
 
@@ -47,6 +47,11 @@ export interface ISoftwareResource extends AllSchemas, VirtualResource {
    * Link to relevant project or use case
    */
   relevant_project_link?: string;
+
+  /**
+   * Representation of the resource
+   */
+  representation?: string;
 }
 
 export interface ISoftwareResourceMethods {}

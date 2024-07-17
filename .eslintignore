@@ -10,3 +10,6 @@ pnpm-lock.yaml
 reference-models/
 scripts/
 docs
+terraform/
+templates/
+values.yaml

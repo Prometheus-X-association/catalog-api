@@ -1,8 +1,9 @@
 import "express";
 import { JwtPayload } from "jsonwebtoken";
-import { IEcosystem, IParticipant } from "./models";
 
 import Joi from "joi";
+import { IParticipant } from "./participant";
+import { IEcosystem } from "./ecosystem";
 
 declare module "express" {
   interface Request {

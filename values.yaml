@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: catalog-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 3000
+
+env:
+  NODE_ENV: development
+  PORT: "3000"
+  MONGO_USERNAME: ""
+  MONGO_PASSWORD: ""
+  MONGO_PORT: "27017"
+  MONGO_HOST: "your_mongo_host"
+  MONGO_DATABASE: "ptx-catalog"
+  API_URL: "http://localhost:3000/v1"
+  JWT_SECRET_KEY: "abc123"
+  SALT_ROUNDS: "10"
+  CONTRACT_SERVICE_ENDPOINT: "http://localhost:8888"

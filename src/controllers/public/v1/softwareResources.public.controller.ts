@@ -3,6 +3,7 @@ import { SoftwareResource } from "../../../models";
 import { buildResolvableSelfDescriptionURI } from "../../../libs/self-descriptions";
 import { ResourceTypes } from "../../../libs/dcat/types";
 import { mapCatalog } from "../../../libs/dcat";
+import { Representation } from "../../../models/Representation";
 
 const DEFAULT_QUERY_OPTIONS = {
   page: 0,
@@ -37,6 +38,7 @@ export const getSoftwareResources = async (
 
     const [resources, count] = await Promise.all([
       query
+        .populate([{ path: "representation", model: Representation }])
         .limit(queryOptions?.limit)
         .skip(queryOptions?.page * queryOptions?.limit)
         .lean(),
@@ -97,6 +99,7 @@ export const getDCATSoftwareResources = async (
 
     const [resources, count] = await Promise.all([
       query
+        .populate([{ path: "representation", model: Representation }])
         .limit(queryOptions?.limit)
         .skip(queryOptions?.page * queryOptions?.limit)
         .lean(),

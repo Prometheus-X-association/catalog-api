@@ -28,6 +28,7 @@ export const dataResourceSchema = new Schema<
     expirationDateTime: { type: String, default: "" },
     containsPII: { type: Boolean, required: true },
     category: { type: String, default: "" },
+    representation: { type: String, ref: "Representation" },
 
     schema_version: { type: String, default: "1" },
   },

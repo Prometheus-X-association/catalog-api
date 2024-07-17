@@ -76,8 +76,7 @@ export const mapSoftwareResource = (
   dataService.endpointURL = resource.exposedThrough;
 
   if (
-    resource.representation &&
-    resource.representation instanceof Types.ObjectId
+    resource.representation
   ) {
     const dataset = new dcat.Dataset();
     dataset.distribution = new dcat.Distribution();
