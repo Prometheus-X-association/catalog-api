@@ -55,6 +55,28 @@ export interface LegalPerson {
   subOrganization: string[];
 }
 
+export type ServiceUrls = {
+  /**
+   * The URL of the service used to export data
+   */
+  dataExport?: string;
+
+  /**
+   * The URL to send signed consent to exporting service
+   */
+  consentImport?: string;
+
+  /**
+   * url used by importing service
+   */
+  dataImport?: string;
+
+  /**
+   * The URL of the service used to authenticate a new user
+   */
+  consentExport?: string;
+};
+
 /**
  * A GAIA-X valid participant Schema
  * Gaia-x participant class : https://docs.gaia-x.eu/policy-rules-committee/trust-framework/latest/participant/
@@ -92,6 +114,31 @@ export interface IParticipant extends AllSchemas {
    * offerings (if any) for the ecosystem usage
    */
   ecosystems: EcosystemParticipantParticipation[];
+
+  /**
+   * credentials clientId
+   */
+  serviceKey: string;
+
+  /**
+   * credentials clientSecret
+   */
+  serviceSecretKey: string;
+
+  /**
+   * Identified a dataspace connector used by the participant
+   */
+  dataspaceConnectorAppKey: string;
+
+  /**
+   * dataspace connector default endpoint
+   */
+  dataspaceEndpoint: string;
+
+  /**
+   * useful Urls
+   */
+  urls?: ServiceUrls;
 }
 
 export interface IParticipantMethods {}

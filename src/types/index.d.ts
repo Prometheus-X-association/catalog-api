@@ -25,5 +25,10 @@ declare module "express" {
     ecosystem?: IEcosystem;
 
     validationSchema?: Joi.ObjectSchema;
+
+    /**
+     * Participant API Key to authenticate
+     */
+    serviceKey?: string;
   }
 }

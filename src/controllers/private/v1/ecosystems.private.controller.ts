@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { HydratedDocument, Types } from "mongoose";
-import { Ecosystem, ServiceOffering } from "../../../models";
+import { HydratedDocument } from "mongoose";
+import { Ecosystem } from "../../../models";
 import { ECOSYSTEM_POPULATION } from "../../public/v1/ecosystems.public.controller";
 import {
   batchInjectRoleAndObligations,
@@ -13,10 +13,6 @@ import {
   IEcosystemInvitation,
   IEcosystemJoinRequest,
 } from "../../../types/ecosystem";
-import {
-  ServiceOfferingPopulationType,
-  serviceOfferingPopulation,
-} from "../../../utils/schemaPopulation";
 
 /**
  * Returns all ecosystems the authenticated organization is either

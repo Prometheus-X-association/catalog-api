@@ -136,6 +136,7 @@ export const getParticipants = async (
     const [participants, count] = await Promise.all([
       Participant.find()
         .limit(queryOptions?.limit)
+        .select("-serviceKey -serviceSecretKey")
         .skip(queryOptions?.page * queryOptions?.limit),
       Participant.count(),
     ]);
@@ -229,7 +230,9 @@ export const getParticipantSD = async (
   next: NextFunction
 ) => {
   try {
-    const participant = await Participant.findById(req.params.id).lean();
+    const participant = await Participant.findById(req.params.id)
+      .select("-serviceKey -serviceSecretKey")
+      .lean();
     const result = {
       "@context": CONFIG.apiUrl + "/participant",
       "@type": "Participant",

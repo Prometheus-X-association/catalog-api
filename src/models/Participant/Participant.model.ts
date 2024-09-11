@@ -25,6 +25,16 @@ export const participantSchema = new Schema<
       subOrganization: [{ type: String }],
     },
     termsAndConditions: { type: String, default: "" },
+    dataspaceConnectorAppKey: { type: String, default: "" },
+    dataspaceEndpoint: { type: String, default: "" },
+    serviceKey: String,
+    serviceSecretKey: String,
+    urls: {
+      dataExport: String,
+      consentImport: String,
+      dataImport: String,
+      consentExport: String,
+    },
     schema_version: { type: String, default: "1" },
   },
   {

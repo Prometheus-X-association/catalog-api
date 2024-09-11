@@ -3,6 +3,7 @@ import { issueJwt } from "../../../libs/jwt/jwt";
 import { Router } from "express";
 import { OrganizationAdmin } from "../../../models/OrganizationAdmin";
 import { Participant } from "../../../models/Participant";
+import { makeId } from "../../../utils/idGenerator";
 
 const r: Router = Router();
 
@@ -21,7 +22,11 @@ r.post("/signup", async (req: Request, res: Response, next: NextFunction) => {
     if (participant)
       return res.status(409).json({ error: "Existing participant" });
 
-    const newParticipant = new Participant({ legalName: participantName });
+    const newParticipant = new Participant({
+      legalName: participantName,
+      serviceKey: makeId(),
+      serviceSecretKey: makeId(),
+    });
     const newAdmin = new OrganizationAdmin({
       ...req.body,
       organization: newParticipant.id,
