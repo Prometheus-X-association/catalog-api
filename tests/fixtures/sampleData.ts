@@ -62,18 +62,13 @@ export const sampleEcosystem = {
       }
     },
   ],
-
-  buildingBlocks: [
-    {
-      buildingBlock: "Block 1",
-      implementation: "Implementation 1",
-    },
-  ],
 };
 
+
+
 export const sampleEcosystem1 = {
-  name: "Sample Ecosystem",
-  description: "This is a sample ecosystem description.",  
+  name: "Sample Ecosystem1",
+  description: "This is a sample ecosystem1 description.",  
   provides: ["Data", "Users"],
   searchedData: ["Data 1", "Data 2"],
   searchedServices: ["Service 1"],
@@ -332,6 +327,37 @@ export const sampleBilateralNegotiation = {
   providerServiceOffering:"",
   consumerServiceOffering:"",
 };
+
+export const sampleAuthorizeNegotiation = {
+  policy: [
+    {
+      ruleId: "rule-access-5",
+      values: {
+        dateBegin: "2024-01-01",
+        dateEnd: "2026-01-01",
+      },
+    },
+  ],
+};
+
+export const sampleNegotiatePolicies = {
+  policy: [
+    {
+      ruleId: "rule-access-5",
+      values: {
+        dateBegin: "2022-02-02",
+        dateEnd: "2023-03-03",
+      },
+    },
+  ],
+};
+
+export const sampleSignNegotiation = {
+  signature: "hasSigned",
+}
+export const sampleSignEcosystem = {
+  signature: "hasSigned",
+}
 
 export const sampleSoftwareResource = {
   aggregationOf: ["Resource 1", "Resource 2"],

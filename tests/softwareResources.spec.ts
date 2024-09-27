@@ -22,7 +22,7 @@ let consumerId = "";
 let softwareResourceId: "";
 let jwt = "";
 
-describe("Software Resources Routes Tests", () => {
+describe("Software Resources Routes Tests", function ()  {
   let loadMongooseStub;
   before(async () => {
     loadMongooseStub = stub(loadMongoose, "loadMongoose").callsFake(
@@ -71,8 +71,6 @@ describe("Software Resources Routes Tests", () => {
     softwareResourceId = response.body._id;
     expect(response.body).to.be.an("object");
     expect(response.body.providedBy).to.equal(consumerId);
-
-    //assertions
   });
 
   it("should update software resource", async () => {
@@ -89,8 +87,7 @@ describe("Software Resources Routes Tests", () => {
     const response = await request(app)
       .get(`/v1/softwareresources/${softwareResourceId}`)
       .expect(200);
-    //assertions
-    //expect response id = softwareResourceId
+      expect(response.body._id).to.equal(softwareResourceId);
   });
 
   it("should get software resource by ID-protected", async () => {
@@ -98,8 +95,7 @@ describe("Software Resources Routes Tests", () => {
       .get(`/v1/softwareresources/${softwareResourceId}`)
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
-    //assertions
-    //expect response id = softwareResourceId
+      expect(response.body._id).to.equal(softwareResourceId);
   });
 
   it("should get Participant softwareResources", async () => {
@@ -107,25 +103,21 @@ describe("Software Resources Routes Tests", () => {
       .get("/v1/softwareresources/me")
       .set("Authorization", `Bearer ${jwt}`)
       .expect(200);
-    //assertions
-    //expect response not empty
-  });
+      expect(response.body).to.not.be.empty;
+    });
 
   it("should get all softwareResources", async () => {
     const response = await request(app)
       .get("/v1/softwareresources")
       .expect(200);
-    //assertions
-    //expect response not empty
-  });
+      expect(response.body).to.not.be.empty;
+    });
 
   it("should delete softwareResource", async () => {
     const response = await request(app)
       .delete(`/v1/softwareresources/${softwareResourceId}`)
       .set("Authorization", `Bearer ${jwt}`)
       .expect(204);
-    //assertions
-    //expect
+      expect(response.body).to.be.empty;
   });
-  // test error get software resources deleted
 });

@@ -647,14 +647,12 @@ export const getEcosystemContract = async (
   try {
     const { id } = req.params;
     const ecosystem = await Ecosystem.findById(id);
-
     if (!ecosystem)
       return res.status(404).json({
         code: 404,
         errorMsg: "Not found",
         message: "Ecosystem not found",
       });
-
     try {
       const contract = await getContractById(ecosystem.contract, "ecosystem");
       return res.json(contract);

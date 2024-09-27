@@ -14,7 +14,7 @@ import {
   sampleServiceOffering,
 } from "./fixtures/sampleData";
 import { Application } from "express";
-import { mockContract } from "./fixtures/fixture.contract";
+import { setupMocks } from "./fixtures/fixture.contract";
 import { closeMongoose } from "../src/config/database";
 
 let app: Application;
@@ -33,7 +33,7 @@ describe("Main Catalog Api Test Cases", () => {
     await serverInstance.promise;
     app = serverInstance.app;
     server = serverInstance.server;
-    mockContract();
+    setupMocks();
   });
 
   after(async () => {
