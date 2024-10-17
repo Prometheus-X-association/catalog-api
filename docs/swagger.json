@@ -45,7 +45,11 @@
       "get": {
         "summary": "Retrieves Data resources with pagination",
         "tags": ["Data Resources"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
@@ -148,7 +152,11 @@
       "get": {
         "summary": "Retrieves a single Data resource by its ID",
         "tags": ["Data Resources"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -288,7 +296,11 @@
       "get": {
         "summary": "Retrieves software resources with pagination",
         "tags": ["Software Resources"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
@@ -391,7 +403,11 @@
       "get": {
         "summary": "Retrieves a single Software resource by its ID",
         "tags": ["Software Resources"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -531,7 +547,11 @@
       "get": {
         "summary": "Retrieves Service offerings with pagination",
         "tags": ["Service Offerings"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
@@ -634,7 +654,11 @@
       "get": {
         "summary": "Retrieves a single Service Offering by its ID",
         "tags": ["Service Offerings"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -1150,7 +1174,11 @@
       "get": {
         "summary": "Retrieves ecosystems with pagination",
         "tags": ["Ecosystems"],
-        "security": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "query",
@@ -1253,6 +1281,11 @@
       "get": {
         "summary": "Retrieves a single Ecosystem by its ID",
         "tags": ["Ecosystems"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -1417,6 +1450,17 @@
       "get": {
         "summary": "Retrieves invitations of the ecosystem",
         "tags": ["Ecosystems"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -1447,7 +1491,23 @@
         }
       },
       "post": {
-        "tags": ["Negotiation"],
+        "tags": ["Ecosystems"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          }
+        ],
         "summary": "Create an invitation to an ecosystem",
         "requestBody": {
           "content": {
@@ -1485,6 +1545,17 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          }
+        ],
         "description": "Accepts an invitation to an ecosystem",
         "responses": {
           "200": {
@@ -1501,6 +1572,17 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          }
+        ],
         "description": "Denies an invitation to an ecosystem",
         "responses": {
           "200": {
@@ -1515,6 +1597,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
           }
         ],
         "description": "Creates a request to join an ecosystem",
@@ -1556,6 +1649,26 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          },
+          {
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Request"
+          }
+        ],
         "description": "Authorizes a join request made to an ecosystem",
         "responses": {
           "200": {
@@ -1572,6 +1685,26 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          },
+          {
+            "in": "path",
+            "name": "requestId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Request"
+          }
+        ],
         "description": "Rejects a join request made to an ecosystem",
         "responses": {
           "200": {
@@ -1586,6 +1719,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
           }
         ],
         "description": "Configure the offerings for a participant in an ecosystem",
@@ -1621,6 +1765,17 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
+          }
+        ],
         "description": "Retrieve contract for the ecosystem. The format of the contract is defined in the Prometheus-X Contract Manager repository",
         "responses": {
           "200": {
@@ -1640,6 +1795,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
           }
         ],
         "description": "Create a contract for the ecosystem. This endpoint is only used if an ecosystem was created and the contract auto-generation failed.",
@@ -1663,6 +1829,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
           }
         ],
         "description": "Apply orchestrator signature on the ecosystem.",
@@ -1693,6 +1870,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the Ecosystem"
           }
         ],
         "description": "Apply participant signature on the ecosystem.",
