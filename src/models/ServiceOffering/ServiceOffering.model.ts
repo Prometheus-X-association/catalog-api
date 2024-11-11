@@ -44,10 +44,8 @@ export const serviceOfferingSchema = new Schema<
     location: { type: String, default: "" },
     description: { type: String, default: "" },
     keywords: [String],
-    dataResources: [{ type: Schema.Types.ObjectId, ref: "DataResource" }],
-    softwareResources: [
-      { type: Schema.Types.ObjectId, ref: "SoftwareResource" },
-    ],
+    dataResources: [{ type: String, ref: "DataResource" }],
+    softwareResources: [{ type: String, ref: "SoftwareResource" }],
 
     // Gaia-x federation
     compliantServiceOfferingVC: { type: String, default: "" },
