@@ -44,7 +44,7 @@ const PublicRoutersV1 = [
     router: dataResourcesPublicRouter,
   },
   {
-    prefix: "/softwaresources",
+    prefix: "/softwareresources",
     router: softwareResourcesPublicRouter,
   },
   {
@@ -79,7 +79,7 @@ const PrivateRoutersV1 = [
     router: serviceOfferingsPrivateRouter,
   },
   {
-    prefix: "/softwaresources",
+    prefix: "/softwareresources",
     router: softwareResourcesPrivateRouter,
   },
 ];
