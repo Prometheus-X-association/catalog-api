@@ -181,6 +181,152 @@ export interface IBusinessLogic {
   }[];
 }
 
+export interface IProjectDataNeed {
+  resource?: string;
+  description?: string;
+}
+
+export interface IProjectServiceNeed {
+  service?: string;
+  description?: string;
+}
+
+export interface IProjectServiceInfrastructure {
+  infrastructure?: string;
+  description?: string;
+}
+
+export interface IProjectContribution {
+  contribution?: string;
+  description?: string;
+}
+
+export interface IProjectParticipantRole {
+  participant?: string;
+  roles?: string[];
+}
+
+export interface IProject {
+  /** Title of the project */
+  title?: string;
+
+  /** Short caption of the project */
+  caption?: string;
+
+  /** Description of the project */
+  description?: string;
+
+  /** Categories of the project */
+  categories?: string[];
+
+  /** Country or region of the project */
+  countryOrRegion?: string;
+
+  /** Picture / image of the project */
+  picture?: string;
+
+  /** Purpose of the project */
+  purpose?: string;
+
+  /** Benefit brought by the project */
+  benefit?: string;
+
+  /** Desired date of data availability */
+  desiredDataAvailabilityDate?: Date;
+
+  /** Legal basis of the data processing */
+  legalBasisOfProcessing?: string;
+
+  /** Description of the legal basis */
+  legalBasisDescription?: string;
+
+  /** Data needs of the project */
+  dataNeed?: IProjectDataNeed[];
+
+  /** Service needs of the project */
+  serviceNeed?: IProjectServiceNeed[];
+
+  /** Infrastructure services needed by the project */
+  serviceInfrastructures?: IProjectServiceInfrastructure[];
+
+  /** Criteria and conditions for the project */
+  criteriaAndConditions?: string;
+
+  /** Contributions brought by participants */
+  contributions?: IProjectContribution[];
+
+  /** Participants and their roles in the project */
+  participantsAndRoles?: IProjectParticipantRole[];
+}
+
+export type ReversibilityExitValue =
+  | "None"
+  | "Data deletion only"
+  | "Return + deletion"
+  | "Return + deletion + destruction certificate";
+
+export interface IReversibilityExit {
+  value?: ReversibilityExitValue;
+  deadlineDays?: 30 | 60 | 90;
+}
+
+export interface ISubcontracting {
+  subcontractors?: string[];
+}
+
+export interface ISecurityIncidentNotification {
+  value?: "Without undue delay" | "24h" | "48h" | "72h";
+}
+
+export interface IIntellectualPropertyOnOutputs {
+  value?:
+    | "Provider retains all"
+    | "Consumer owns results"
+    | "Joint ownership"
+    | "Licensed back"
+    | "No derivative rights";
+}
+
+export interface IGoverningLaw {
+  countryISO?: string;
+  disputeMode?: "Courts" | "Arbitration" | "Mediation then arbitration";
+}
+
+export interface IForceMajeure {
+  value?: "Standard clause" | "Standard + epidemic" | "None";
+}
+
+export interface IAuditRight {
+  value?:
+    | "None"
+    | "Self-certification"
+    | "Audit on notice"
+    | "Third-party audit"
+    | "Regulator access";
+  frequency?: "Annual" | "On suspicion" | "Once per contract";
+}
+
+export interface IConfidentiality {
+  value?: "None" | "Mutual NDA" | "Unilateral NDA";
+  survivalYears?: 1 | 3 | 5;
+}
+
+export interface IAmendmentModification {
+  value?: "Written amendment only" | "Mutual agreement" | "With notice";
+}
+
+export interface IAdditionalClauses {
+  reversibilityExit?: IReversibilityExit | null;
+  subcontracting?: ISubcontracting | null;
+  securityIncidentNotification?: ISecurityIncidentNotification | null;
+  intellectualPropertyOnOutputs?: IIntellectualPropertyOnOutputs | null;
+  governingLawAndJurisdiction?: IGoverningLaw | null;
+  forceMajeure?: IForceMajeure | null;
+  auditRight?: IAuditRight | null;
+  confidentiality?: IConfidentiality | null;
+  amendmentModification?: IAmendmentModification | null;
+}
+
 export interface IEcosystem extends AllSchemas {
   /**
    * The participant orchestrating the ecosystem
@@ -316,6 +462,24 @@ export interface IEcosystem extends AllSchemas {
    * Contract associated to this ecosystem
    */
   contract?: string | null;
+
+  /**
+   * Project information associated to this ecosystem
+   */
+  project?: IProject | null;
+
+  /**
+   * Additional contractual clauses associated to this ecosystem
+   */
+  additionalClauses?: IAdditionalClauses | null;
+
+  /**
+   * Free-form custom fields allowing each deployed instance to store
+   * sector-specific data (e.g. legal, healthcare, finance) without
+   * altering the base model.
+   * These fields are carried over into the contract as-is.
+   */
+  customFields?: Record<string, unknown>;
 }
 
 export type EcosystemInviteMethodOptions = {
@@ -429,7 +593,7 @@ export interface IEcosystemMethods {
   /**
    * Accepts a request to join the eosystem
    * Returns true on success and false on failure
-   * @param joinRequestID The ID of the joinRequest concerned
+   * @param options
    */
   acceptJoinRequest(
     options: EcosystemAcceptJoinRequestMethodOptions

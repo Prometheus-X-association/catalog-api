@@ -1,4 +1,4 @@
-import { Model } from "mongoose";
+import { Model, Schema } from "mongoose";
 import { AllSchemas } from "./models";
 
 export type PersonalDataProtectionRegimes =
@@ -7,6 +7,155 @@ export type PersonalDataProtectionRegimes =
   | "PDPA2012"
   | "CCPA2018"
   | "VCDPA2021";
+
+export type SLAAvailability =
+  | "Best effort"
+  | "99%"
+  | "99.5%"
+  | "99.9%"
+  | "99.95%"
+  | "99.99%";
+
+export type SLAUpdateFrequency =
+  | "Real-time / streaming"
+  | "Hourly"
+  | "Daily"
+  | "Weekly"
+  | "Monthly"
+  | "Quarterly"
+  | "On request"
+  | "Static (no update)";
+
+export type SLASupportChannel =
+  | "Email"
+  | "Phone"
+  | "Chat"
+  | "Ticketing portal"
+  | "Slack"
+  | "Community forum"
+  | "Dedicated CSM";
+
+export type ISLA = {
+  deliveryDeadline?: {
+    value: number;
+    unit: "hours" | "business days" | "calendar days";
+  };
+  availability?: SLAAvailability;
+  updateFrequency?: SLAUpdateFrequency;
+  responseTime?: {
+    value: number;
+    unit: "ms" | "s";
+    measurementBasis: "Average" | "p95" | "p99";
+  };
+  availabilityTimeWindow?: {
+    value: "24/7" | "Business hours 5x8" | "Extended 5x12";
+    timezone?: string;
+  };
+  retentionPeriod?: number
+  availabilityPeriod?:
+    | 'Session only'
+    | '30 days'
+    | '90 days'
+    | '1 year'
+    | 'Contract duration'
+    | 'Until consent withdrawal';
+  endOfSupportDate?:
+    |'Contract duration'
+    | '10 days after contract ends'
+    | '30 days after contract ends';
+  endOfLifeDate?:
+    | 'Contract duration'
+    | '10 days after contract ends'
+    | '30 days after contract ends'
+  supportChannels?: SLASupportChannel[];
+  supportServiceHours?: "24/7" | "Business hours 5x8" | "Extended 5x12";
+  supportSeverityLevel?: {
+    level: "Critical" | "High" | "Medium" | "Low";
+    responseTimeValue?: number;
+    responseTimeUnit?: string;
+  };
+  measurementMonitoringMethod?: string;
+  note?: string;
+};
+
+export type IOfferingCommitment = {
+  commitmentConcerned?: string;
+  triggerOperator?:
+    | "<"
+    | "<="
+    | ">"
+    | ">="
+    | "="
+    | "Outside window"
+    | "Not delivered";
+  triggerValue?: string;
+  consequenceType?:
+    | "Service credit"
+    | "Discount"
+    | "Refund"
+    | "Fee waiver"
+    | "Suspension"
+    | "Termination"
+    | "Fixed compensation"
+    | "Cure period then escalation";
+  penaltyAmount?: number;
+  penaltyBasis?:
+    | "% of period fee"
+    | "% of total value"
+    | "Fixed amount"
+    | "Credit days"
+    | "Amount per incident";
+  penaltyCap?:
+    | "% of monthly fee"
+    | "% of annual fee"
+    | "% of total value"
+    | "Fixed cap"
+    | "No cap";
+  measurementPeriod?:
+    | "Per incident"
+    | "Daily"
+    | "Weekly"
+    | "Monthly"
+    | "Quarterly"
+    | "Rolling 30 days"
+    | "Rolling 90 days"
+    | "Contract duration";
+  claimProcedure?: "Automatic credit" | "Claim required" | "Via ticket";
+  claimDeadlineDays?: number;
+  note?: string;
+};
+
+export type IContractDuration = {
+  value?: number;
+  unit?: "months" | "years";
+  renewalMode?:
+    | "None (contract ends)"
+    | "Automatic renewal"
+    | "On mutual agreement";
+  noticePeriodDays?: number;
+};
+
+export type ITerminationForConvenience = {
+  allowed?: boolean;
+  noticePeriodDays?: number;
+};
+
+export type ITerminationForCause = {
+  breachThreshold?: number;
+  noticePeriod?: "Immediate (no notice)" | "X days notice";
+  noticePeriodDays?: number;
+  regulatoryOrSecurityTermination?:
+    | "Yes (immediate)"
+    | "Yes (with X days notice)"
+    | "No (case-by-case)";
+  regulatoryNoticeDays?: number;
+};
+
+export type IPenaltiesTerminationLink = {
+  cumulativePenaltyCapTermination?: boolean;
+  suspensionBeforeTermination?: boolean;
+  suspensionDurationDays?: number;
+};
 
 interface IServiceOfferingExtension {
   description: string;
@@ -25,6 +174,87 @@ interface IServiceOfferingExtension {
    * System ObjectIDs of the aggregated software resources to facilitate query
    */
   softwareResources: string[];
+  /**
+   * Value amount of the pricing for this offering
+   */
+  pricing: number;
+
+  /**
+   * Pricing models based on the PTX registry
+   */
+  pricingModel: string[];
+
+  /**
+   * Pricing description based on the PTX registry
+   */
+  pricingDescription: string;
+
+  businessModel?: string[];
+
+  /**
+   * Maximum consumption of the service
+   */
+  maximumConsumption: string;
+
+  /**
+   * Maximum performance of the service
+   */
+  maximumPerformance: string;
+
+  /**
+   * User friendly B2C description of the offering
+   * Used only for PII
+   */
+  b2cDescription?: any[];
+
+  /**
+   * User friendly Purpose of the offering
+   * Used only for PII and when the offering has at least 1 software resource
+   */
+  purpose?: string;
+
+  /**
+   * A boolean to inform if the service does not have any user to use in data processing
+   */
+  userInteraction: boolean;
+
+  /**
+   * Service Level Agreement details
+   */
+  sla?: ISLA;
+
+  /**
+   * Commitments and penalties linked to this offering
+   */
+  commitments?: IOfferingCommitment[];
+
+  /**
+   * Duration of the contract associated with this offering
+   */
+  contractDuration?: IContractDuration;
+
+  /**
+   * Termination for convenience clause
+   */
+  terminationForConvenience?: ITerminationForConvenience;
+
+  /**
+   * Termination for cause clause
+   */
+  terminationForCause?: ITerminationForCause;
+
+  /**
+   * Link between cumulated penalties and termination conditions
+   */
+  penaltiesTerminationLink?: IPenaltiesTerminationLink;
+
+  /**
+   * Free-form custom fields allowing each deployed instance to store
+   * sector-specific data (e.g. legal, healthcare, finance) without
+   * altering the base model.
+   * These fields are carried over into the contract as-is.
+   */
+  customFields?: Record<string, unknown>;
 }
 
 /**
@@ -103,6 +333,38 @@ export interface IServiceOffering
    * https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
    */
   location: string;
+
+  /**
+   * currency of the pricing
+   */
+  currency: string;
+
+  /**
+   * period of the billing
+   */
+  billingPeriod: string;
+
+  /**
+   * Setup fee for the service offering
+   * @default 0
+   */
+  setupFee: number;
+
+  /**
+   * Cost per API call
+   * @default 0
+   */
+  costPerAPICall: number;
+
+  /**
+   * List of categories applicable to the service offering
+   *
+   * This is a string reference to the PTX registry as it can
+   * point to both data and service categories.
+   *
+   * It can be either a uri or a string
+   */
+  category: string[];
 }
 
 export interface IServiceOfferingMethods {}

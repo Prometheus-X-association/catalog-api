@@ -34,6 +34,17 @@ export async function seedServiceOfferings() {
         serviceOfferingVC: `https://api.example.com/service-offering-vc${i}`,
         dataResources: [],
         softwareResources: [],
+        currency: `USD`,
+        billingPeriod: `monthly`,
+        setupFee: 10,
+        costPerAPICall: 0.01,
+        category: [],
+        pricing: 100,
+        pricingModel: [],
+        pricingDescription: "",
+        maximumPerformance: "",
+        maximumConsumption: "",
+        userInteraction: false,
       };
       serviceOfferings.push(serviceOffering);
     }
